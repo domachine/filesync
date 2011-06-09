@@ -1,0 +1,143 @@
+#+TITLE:     Filesync (file synchronization utility)
+#+AUTHOR:    Dominik Burgdörfer
+#+EMAIL:     dominik.burgdoerfer@googlemail.com
+#+DATE:      2011-06-08 Wed
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:nil pri:nil tags:nil
+#+INFOJS_OPT: view:t toc:t ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+XSLT:
+
+
+* Description
+  Filesync is a utility which makes it easy to keep
+  two places synchron. It listens on the one place for
+  changes and applies them to the other.
+
+* Roadmap
+  ...
+
+* User Interface
+** Program options
+
+   | Option       | Description                                      |
+   |--------------+--------------------------------------------------|
+   | -r, --rsync  | Rsync executable path.                           |
+   | -s, --source | The path to the source directory.                |
+   | -t, --target | The path to the target directory.                |
+   | -h, --host   | The hostname of the target machine.              |
+   | -p, --port   | The port of rsync service on the target machine. |
+   | -d, --depth  | The depth to dive into the                       |
+   |              | directory.                                       |
+
+* Program structure
+
+** TODO Implement boolean type
+    * Either as define
+      #+BEGIN_SRC: C
+#define BOOL unsigned int
+#define TRUE 1
+#define FALSE 0
+      #+END_SRC
+    * or enum
+      #+BEGIN_SRC: C
+enum BOOL
+{
+    FALSE,
+    TRUE
+}
+      #+END_SRC
+
+   Not sure at the moment.
+
+** TODO A watch-session struct with construct and destruction methods
+
+   #+BEGIN_SRC: C
+struct watch_session
+{
+    char *rsync_path;
+    char *source;
+    char *rsync_cmd_cache;
+};
+   #+END_SRC
+
+   rsync-cmd-cache is a buffer for the prebuild ([[Build rsync command]]) rsync
+   command.
+
+** TODO Build rsync command
+   The rsync-cmd-cache field in the watch-session structure represents
+   a template of the used rsync command.
+   This can be done because we need only one command all the
+   time with different parameters. But these parameters can be
+   format sprintf.
+   The building of the command should be done by a seperate function.
+
+   #+BEGIN_SRC: C
+const char *build_rsync_cmd_tmpl(const char *rsync_path,
+                                 const char *host,
+                                 int port);
+   #+END_SRC
+
+** User authentication
+   The user authentication should be done with ssh-keys or standard-input.
+   Filesync doesn't support plain text authentication
+   via the command line interface to avoid attackers to read the
+   password via the process table.
+
+** TODO Rsync proxy
+   A proxy function that abstracts the rsync call.
+
+   #+BEGIN_SRC: C
+int sync_file(struct watch_session *ws, const char *path);
+   #+END_SRC
+
+   /path/ should be relative to the target path.
+   The function should return a value != 0 if something went wrong.
+   A value != 0 is a constant that can be looked up
+   in a error table.
+
+** TODO Logging
+   A logging mechanism should be implemented.
+   Three levels should be possible:
+
+   | Level   | Description                                       |
+   |---------+---------------------------------------------------|
+   | /DEBUG/ | Only outputted if debug is explicitely requested. |
+   | /WARN/  | Outputted if warnings are enabled.                |
+   | /ERROR/ | Always outputted (system critical errors).        |
+
+   Logging should have a unique interface where it is easy to
+   write to log files or use the standard error output etc.
+
+** TODO Inotify watch loop
+
+* Future
+
+** Implement profile functionality
+   This describes the possibility to declare filesync
+   options within a config file (profile) and call filesync
+   with this config file as configuration instruction.
+
+** Implement daemon functionality
+
+* Copyright
+  Copyright (C) 2010  Dominik Burgdörfer <dominik.burgdoerfer@googlemail.com>
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
