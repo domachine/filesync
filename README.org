@@ -14,16 +14,37 @@
 #+LINK_HOME: 
 #+XSLT:
 
+#+LATEX_CLASS: article
+
+#+TODO: TODO DESIGNED IMPLEMENTED | TESTED OBSOLETE
 
 * Description
   Filesync is a utility which makes it easy to keep
   two places synchron. It listens on the one place for
   changes and applies them to the other.
 
-* Roadmap
-  ...
+* Roadmap                                                           :roadmap:
 
-* User Interface
+** DESIGNED Package the program with CMake
+
+** Version 1.0
+   Basic functionality:
+   * Synchronize two directories
+
+** Version 2.0
+   New features:
+   * [[Profile functionality]]
+   * [[Exclude functionality]]
+
+** Version 3.0
+   New features:
+   * [[Daemon functionality]]
+
+** Sub-versions
+   All Sub-versions will be used to submit patches and
+   bugfixes etc.
+
+* User Interface                                                         :ui:
 ** Program options
 
    | Option       | Description                                      |
@@ -31,103 +52,225 @@
    | -r, --rsync  | Rsync executable path.                           |
    | -s, --source | The path to the source directory.                |
    | -t, --target | The path to the target directory.                |
-   | -h, --host   | The hostname of the target machine.              |
-   | -p, --port   | The port of rsync service on the target machine. |
    | -d, --depth  | The depth to dive into the                       |
    |              | directory.                                       |
+* Features                                                         :features:
 
-* Program structure
+** Depth feature
+   Filesync will be able to limit the watching depth.
+   Means the depth of diving recoursive into a directory.
 
-** TODO Implement boolean type
-    * Either as define
-      #+BEGIN_SRC: C
-#define BOOL unsigned int
-#define TRUE 1
-#define FALSE 0
-      #+END_SRC
-    * or enum
-      #+BEGIN_SRC: C
+   * -1 means unlimited depth
+   * 0 means: visit only the given directory without watching any
+     subdirectories.
+   * /n/: Visit /n/ subdirectory-levels.
+
+* Implementation                                             :implementation:
+
+** General structure
+
+*** TESTED Boolean type
+    Implemented as enum.
+
+    #+BEGIN_SRC: C
 enum BOOL
 {
     FALSE,
     TRUE
 }
-      #+END_SRC
+    #+END_SRC
 
-   Not sure at the moment.
+*** TESTED watch-session struct
+    [[file:src/watch_session.h]]
+    [[file:src/watch_session.c]]
 
-** TODO A watch-session struct with construct and destruction methods
+    #+BEGIN_SRC: C
+struct watch_session *new_watch_session();
 
-   #+BEGIN_SRC: C
 struct watch_session
 {
+    /** \brief The src directory which is watched. */
+    char *src;
+
+    /** \brief The target which will be synchronized. */
+    char *target;
+
+    /** \brief The path to the rsync-executable. */
     char *rsync_path;
-    char *source;
-    char *rsync_cmd_cache;
+
+    /** \brief The depth to watch the source directory. */
+    int depth;
+
+    /** \brief Inotify dscriptor. */
+    int notify_descr;
+
+    /** \brief The watch-table. */
+    struct dir_watch *watch_table;
+
+    /** \brief The watch filter mask. */
+    uint32_t watch_mask;
 };
-   #+END_SRC
 
-   rsync-cmd-cache is a buffer for the prebuild ([[Build rsync command]]) rsync
-   command.
+void destroy_watch_session(struct watch_session *ws);
+    #+END_SRC
 
-** TODO Build rsync command
-   The rsync-cmd-cache field in the watch-session structure represents
-   a template of the used rsync command.
-   This can be done because we need only one command all the
-   time with different parameters. But these parameters can be
-   format sprintf.
-   The building of the command should be done by a seperate function.
+    /depth/ = -1 means unlimited depth.
+    /rsync-cmd-cache/ is a buffer for the prebuild ([[Build rsync command]]) rsync
+    command.
 
-   #+BEGIN_SRC: C
-const char *build_rsync_cmd_tmpl(const char *rsync_path,
-                                 const char *host,
-                                 int port);
-   #+END_SRC
+**** TODO Free the hash structure
+     [[file:src/watch_session.c::/*%20TODO:%20Free%20the%20hash%20structure.%20*/][file:src/watch_session.c::/* TODO: Free the hash structure. */]]
 
-** User authentication
-   The user authentication should be done with ssh-keys or standard-input.
-   Filesync doesn't support plain text authentication
-   via the command line interface to avoid attackers to read the
-   password via the process table.
+**** TODO Implement default watch-filter-mask.
+     [[file:src/watch_session.c::/*%20TODO:%20Fix%20this%20with%20default%20bitmask.%20*/][file:src/watch_session.c::/* TODO: Fix this with default bitmask. */]]
+**** TODO Cache the source and the target length.
+     Also affects [[file:src/notify.c][file:src/notify.c]]
+*** TESTED Module testing system
 
-** TODO Rsync proxy
-   A proxy function that abstracts the rsync call.
+*** TESTED Logging
+    The logging mechanism should be used to output various messages. Three levels
+    are defined which should be used in appropriate situations.
 
-   #+BEGIN_SRC: C
+    | Level   | Description                                       |
+    |---------+---------------------------------------------------|
+    | /INFO/  | A normal program message.                         |
+    | /WARN/  | Outputted if warnings are enabled.                |
+    | /ERROR/ | Always outputted (system critical errors).        |
+    | /DEBUG/ | Only outputted if debug is explicitely requested. |
+
+    The levels are implemented using int constants which can be concatenated
+    to a flag map.
+
+    Logging has a unique interface where it is easy to
+    write to log files or use the standard error output etc.
+    The logging interface is initialized using a initialization function
+    that takes a pointer to the FILE object which will be used for logging.
+    The second argument shows whether a newline should be appended to each output.
+    The initialization function needs to be called at least once. Otherwise
+    the program will abort on a logging request.
+
+    The initialization function initializes the logging interface and
+    configures it.
+
+    #+BEGIN_SRC: C
+void init_log(FILE *c, BOOL nl, int filter);
+    #+END_SRC
+
+    The second argument is of [[Boolean type]].
+    The third argument tells the interface which levels should be logged.
+    The logging itself is done using the /log\_msg()/ function.
+    It takes the level and the string (as format string) to log.
+
+    #+BEGIN_SRC: C
+void log_msg(LOG_LEVEL l, const char *fmt, ...);
+    #+END_SRC
+
+    The logging should be closed using the close function. This function
+    closes the stored file descriptor (if != stderr and != stdout).
+
+    #+BEGIN_SRC: C
+void close_log();
+    #+END_SRC
+
+**** TODO [#C] Add possibility to set channel prefixes like [DEBUG] ...
+*** OBSOLETE [#A] Build rsync command
+    The rsync-cmd-cache field in the watch-session structure represents
+    a template of the used rsync command.
+    This can be done because we need only one command all the
+    time with different parameters. But these parameters can be
+    format sprintf.
+    The building of the command should be done by a seperate function.
+
+    #+BEGIN_SRC: C
+char *build_rsync_cmd_tmpl(const char *rsync_path,
+                           const char *src);
+    #+END_SRC
+*** TESTED [#A] Rsync proxy
+    [[file:src/rsync_proxy.h]]
+    [[file:src/rsync_proxy.c]]
+
+    A proxy function that abstracts the rsync call.
+
+    #+BEGIN_SRC: C
 int sync_file(struct watch_session *ws, const char *path);
-   #+END_SRC
+    #+END_SRC
 
-   /path/ should be relative to the target path.
-   The function should return a value != 0 if something went wrong.
-   A value != 0 is a constant that can be looked up
-   in a error table.
+    /path/ should be relative to the target path.
+    The function should return a value != 0 if something went wrong.
+    A value != 0 is a constant that can be looked up
+    in a error table.
+**** TODO [#C] Send rsync output through logging interface.
+*** TESTED [#B] Command line parser
+    [[file:src/cmdparser.h]]
+    [[file:src/cmdparser.c]]
 
-** TODO Logging
-   A logging mechanism should be implemented.
-   Three levels should be possible:
+    A command line parser which parses the command line
+    and fills the fields of a watch_session structure.
 
-   | Level   | Description                                       |
-   |---------+---------------------------------------------------|
-   | /DEBUG/ | Only outputted if debug is explicitely requested. |
-   | /WARN/  | Outputted if warnings are enabled.                |
-   | /ERROR/ | Always outputted (system critical errors).        |
+    The command line mainly consists of a method that takes a
+    pointer to a [[watch-session struct]].
+    This watch-session is filled with the information extracted from the
+    command line.
+    The watch session should be created with new_watch_session().
 
-   Logging should have a unique interface where it is easy to
-   write to log files or use the standard error output etc.
+    Errors and warnings are logged through the logging interface.
+    A return-value != 0 indicates an error while parsing.
 
-** TODO Inotify watch loop
+    #+BEGIN_SRC: C
+int parse_cmd_line(struct watch_session *ws, int argc, const char **argv);
+    #+END_SRC
+**** TODO Make the verbosity level customizable
+     [[file:src/main.c::/*%20TODO:%20make%20the%20verbosity%20level%20cutomizable%20through%20command%20line.%20*/][file:src/main.c::/* TODO: make the verbosity level cutomizable through command line. */]]
+
+*** User authentication
+    The user authentication should be done with ssh-keys or standard-input.
+    Filesync doesn't support plain text authentication
+    via the command line interface to avoid attackers to read the
+    password via the process table.
+
+*** TODO [#B] Inotify watch loop
+**** TESTED File Watch structure
+     [[file:src/notify.h]]
+     [[file:src/notify.c]]
+
+     #+BEGIN_SRC: C
+struct dir_watch
+{
+    int wd;
+
+    /** \brief The path of the watched directory (relative to the top level). */
+    char *path;
+
+    /** \brief The depth-level of the watched directory. */
+    int depth_level;
+
+    /** \brief Needed to make this hashable. */
+    UT_hash_handle hh;
+};
+     #+END_SRC
+**** TODO Depth recording
+     [[file:src/main.c]]
+
+***** Convention
+      Top-level (src directory) is level 0.
+
+** TODO [#C] Memory error system
 
 * Future
 
-** Implement profile functionality
+** Profile functionality
    This describes the possibility to declare filesync
    options within a config file (profile) and call filesync
    with this config file as configuration instruction.
 
-** Implement daemon functionality
+** Daemon functionality
+   This will be enabled using an init-script.
+
+** Exclude functionality
+   Makes it possible to exclude certain files from synchronization.
 
 * Copyright
-  Copyright (C) 2010  Dominik Burgdörfer <dominik.burgdoerfer@googlemail.com>
+  Copyright (C) 2010, 2011  Dominik Burgdörfer <dominik.burgdoerfer@googlemail.com>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
