@@ -70,7 +70,7 @@ int install_dir_watch(struct watch_session *ws, const char *path, int depth)
         return -1;
     }
     else
-        log_msg(DEBUG, "Added watch for `%s'", full_path, strerror(errno));
+        log_msg(DEBUG, "Added watch for `%s'", full_path);
 
 
     free(full_path);
