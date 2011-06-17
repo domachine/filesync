@@ -57,6 +57,12 @@ struct watch_session
 
     /** \brief Internal field to cache src length. */
     int src_len;
+
+    /**
+       \brief Regular expression that specifies files that should
+       be excluded from synchronization.
+    */
+    regex_t *excl;
 };
 
 /**
