@@ -63,9 +63,14 @@ void destroy_watch_session(struct watch_session *ws)
     assert(ws);
 
     /* Do the garbage collection. */
-    FREE_STR(ws->src);
-    FREE_STR(ws->target);
-    FREE_STR(ws->rsync_path);
+    FREE_MEM(ws->src);
+    FREE_MEM(ws->target);
+    FREE_MEM(ws->rsync_path);
+
+    if(ws->excl) {
+        regfree(ws->excl);
+        free(ws->excl);
+    }
 
     /* TODO: Free the hash structure. */
     /* Free the structure itself. */
