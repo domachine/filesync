@@ -159,25 +159,24 @@ int main(int argc, char **argv)
         if(stat(compl_path, &affec_file) < 0)
             log_msg(WARN, "Stat failed for `%s': %s", compl_path, strerror(errno));
         else {
-            if(S_ISDIR(affec_file.st_mode) && (event_buf->mask & IN_CREATE) == IN_CREATE) {
+            int rel_path_len = strlen(dw->path) + 1 + strlen(event_buf->name) + 1;
+            char *rel_path;
+            AUTO_SNPRINTF(rel_path, rel_path_len, "%s/%s", dw->path, event_buf->name);
 
+            if(S_ISDIR(affec_file.st_mode) && (event_buf->mask & IN_CREATE) == IN_CREATE) {
                 /* The file is a directory (newly created). So add it to the
                    watch-table. */
-                int rel_path_len = strlen(dw->path) + 1 + strlen(event_buf->name) + 1;
-                char *rel_path;
-                AUTO_SNPRINTF(rel_path, rel_path_len, "%s/%s", dw->path, event_buf->name);
-
                 log_msg(DEBUG, "Adding newly created directory: %s", rel_path);
 
                 reg_dir(ws, dw->depth_level + 1, rel_path);
-
-                free(rel_path);
             }
 
             log_msg(DEBUG, "Synchronizing file: %s/%s", dw->path, event_buf->name);
 
             if(!ws->excl || regexec(ws->excl, compl_path, 0, NULL, 0) != 0)
                 sync_file(ws, dw->path, event_buf->name);
+
+            free(rel_path);
         }
 
         free(compl_path);
