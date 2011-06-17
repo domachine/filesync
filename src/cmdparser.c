@@ -33,9 +33,10 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
 {
     struct option long_options[] =
         {
-            {"rsync", required_argument, NULL, 'r'},
-            {"help",  no_argument,       NULL, 'h'},
-            {"depth", required_argument, NULL, 'd'},
+            {"rsync",   required_argument, NULL, 'r'},
+            {"help",    no_argument,       NULL, 'h'},
+            {"depth",   required_argument, NULL, 'd'},
+            {"exclude", required_argument, NULL, 'e'},
             {NULL,    0,                 NULL, 0}
         };
 
@@ -74,6 +75,19 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
                 ws->depth = -1;
             }
             break;
+        case 'e':
+            ws->excl = (regex_t *)malloc(sizeof(regex_t));
+            assert(ws->excl);
+
+            int err_code;
+            if((err_code = regcomp(ws->excl, optarg, REG_EXTENDED)) != 0) {
+                size_t err_len = regerror(err_code, ws->excl, NULL, 0);
+                char *err_buf = (char *)malloc(err_len);
+                assert(err_buf);
+
+                regerror(err_code, ws->excl, err_buf, err_len);
+                log_msg(WARN, "Failed to compile regex: %s", err_buf);
+            }
         case '?':
             return -1;
         default:
