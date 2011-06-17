@@ -42,6 +42,7 @@ struct watch_session *new_watch_session()
     clone_str(&ws->rsync_path, "rsync");
 
     ws->depth = -1;
+    ws->src_len = 0;
     ws->notify_descr = inotify_init();
 
     assert(ws->notify_descr);
