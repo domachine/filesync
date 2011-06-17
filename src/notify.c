@@ -35,7 +35,7 @@ int install_dir_watch(struct watch_session *ws, const char *path, int depth)
     assert(ws);
 
     /* Turn relative path into full path. */
-    int path_len = strlen(ws->src) + 1 + strlen(path) + 1;
+    int path_len = ws->src_len + 1 + strlen(path) + 1;
     char *full_path = (char *)malloc(path_len);
 
     if(!full_path)

@@ -39,7 +39,7 @@ static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
     if(ws->depth > -1 && cur_depth > ws->depth)
         return 0;
 
-    int compl_path_len = strlen(ws->src) + 1 + strlen(path) + 1;
+    int compl_path_len = ws->src_len + 1 + strlen(path) + 1;
     char *compl_path = (char *)malloc(compl_path_len);
     assert(compl_path);
     sprintf(compl_path, "%s/%s", ws->src, path);
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    int src_len = strlen(ws->src);
+    int src_len = ws->src_len;
     if(ws->src[src_len - 1] == '/')
         ws->src[src_len - 1] = '\0';
 
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
 
         struct stat affec_file;
 
-        char *compl_path = (char *)malloc(strlen(ws->src) + 1 +
+        char *compl_path = (char *)malloc(ws->src_len + 1 +
                                           strlen(dw->path) + 1 +
                                           strlen(event_buf->name) + 1);
 

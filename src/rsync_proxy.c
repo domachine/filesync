@@ -82,7 +82,7 @@ int sync_file(struct watch_session *ws, const char *dir, const char *file)
 
     /* TODO: Cache ws->src length. */
     /* Create source argument. */
-    int src_len = strlen(ws->src) + strlen(dir) + strlen(file) + 3; /* +3 because of slashes and \0 */
+    int src_len = ws->src_len + strlen(dir) + strlen(file) + 3; /* +3 because of slashes and \0 */
     argv[1] = (char *)malloc(src_len);
 
     CHECK_PTR(argv[1]);
