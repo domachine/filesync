@@ -25,6 +25,7 @@
 #define _FILESYNC_WATCH_SESSION_H_
 
 #include <sys/inotify.h>
+#include <regex.h>
 
 
 /**
