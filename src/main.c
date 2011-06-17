@@ -32,6 +32,7 @@
 #include "notify.h"
 #include "rsync_proxy.h"
 
+/* Automates the malloc -> snprintf stuff. */
 #define AUTO_SNPRINTF(str, n, fmt, args ...) do {   \
         str = (char *)malloc(n);                    \
         assert(str);                                \
