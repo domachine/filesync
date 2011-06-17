@@ -88,6 +88,7 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
                 regerror(err_code, ws->excl, err_buf, err_len);
                 log_msg(WARN, "Failed to compile regex: %s", err_buf);
             }
+            break;
         case '?':
             return -1;
         default:
