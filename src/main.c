@@ -32,6 +32,11 @@
 #include "notify.h"
 #include "rsync_proxy.h"
 
+#define AUTO_SNPRINTF(str, n, fmt, args ...) do {   \
+        str = (char *)malloc(n);                    \
+        assert(str);                                \
+        snprintf(str, n, fmt, args);                \
+    } while(0)
 
 static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
 {
@@ -40,9 +45,9 @@ static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
         return 0;
 
     int compl_path_len = ws->src_len + 1 + strlen(path) + 1;
-    char *compl_path = (char *)malloc(compl_path_len);
-    assert(compl_path);
-    sprintf(compl_path, "%s/%s", ws->src, path);
+    char *compl_path;
+    AUTO_SNPRINTF(compl_path, compl_path_len, "%s/%s", ws->src, path);
+
     DIR *cur_dir = opendir(compl_path);
     free(compl_path);
 
@@ -61,14 +66,9 @@ static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
 
             /* Turn relative path into complete path. */
             int full_path_len = strlen(path) + 1 + strlen(d->d_name) + 1;
-            char *full_path = (char *)malloc(full_path_len);
+            char *full_path;
 
-            if(!full_path) {
-                log_msg(WARN, "Failed to allocate memory for full_path.");
-                return -2;
-            }
-
-            sprintf(full_path, "%s/%s", path, d->d_name);
+            AUTO_SNPRINTF(full_path, full_path_len, "%s/%s", path, d->d_name);
 
             /* Watch subdirectory. */
             reg_dir(ws, cur_depth + 1, full_path);
@@ -144,13 +144,12 @@ int main(int argc, char **argv)
 
         struct stat affec_file;
 
-        char *compl_path = (char *)malloc(ws->src_len + 1 +
-                                          strlen(dw->path) + 1 +
-                                          strlen(event_buf->name) + 1);
+        int compl_path_len = ws->src_len + 1 +
+            strlen(dw->path) + 1 +
+            strlen(event_buf->name) + 1;
 
-        assert(compl_path);
-
-        sprintf(compl_path, "%s/%s/%s", ws->src, dw->path, event_buf->name);
+        char *compl_path;
+        AUTO_SNPRINTF(compl_path, compl_path_len, "%s/%s/%s", ws->src, dw->path, event_buf->name);
 
         /* Check the file-type of the file reported by inotify. */
         if(stat(compl_path, &affec_file) < 0)
@@ -160,12 +159,10 @@ int main(int argc, char **argv)
 
                 /* The file is a directory (newly created). So add it to the
                    watch-table. */
-                char *rel_path = (char *)malloc(strlen(dw->path) + 1 +
-                                                strlen(event_buf->name) + 1);
+                int rel_path_len = strlen(dw->path) + 1 + strlen(event_buf->name) + 1;
+                char *rel_path;
+                AUTO_SNPRINTF(rel_path, rel_path_len, "%s/%s", dw->path, event_buf->name);
 
-                assert(rel_path);
-
-                sprintf(rel_path, "%s/%s", dw->path, event_buf->name);
                 log_msg(DEBUG, "Adding newly created directory: %s", rel_path);
 
                 reg_dir(ws, dw->depth_level + 1, rel_path);
