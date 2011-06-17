@@ -72,7 +72,7 @@ static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
 
             AUTO_SNPRINTF(full_path, full_path_len, "%s/%s", path, d->d_name);
 
-            if(!ws->excl || regexec(ws->excl, full_path, 0, NULL, 0) != 0)
+            if(!ws->excl || regexec(ws->excl, compl_path, 0, NULL, 0) != 0)
                 /* Watch subdirectory. */
                 reg_dir(ws, cur_depth + 1, full_path);
 
