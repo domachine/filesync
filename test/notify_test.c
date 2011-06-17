@@ -34,6 +34,8 @@ int main()
     assert(ws);
 
     clone_str(&ws->src, "test-src");
+    ws->src_len = strlen(ws->src);
+
     clone_str(&ws->target, "test-target");
 
     if(install_dir_watch(ws, "dir", 1) < 0)
