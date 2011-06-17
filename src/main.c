@@ -62,6 +62,7 @@ static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
     struct dirent *d;
     while((d = readdir(cur_dir)) != NULL) {
         if(d->d_type == DT_DIR) {
+            /* Skip current and parent-directory links. */
             if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
                 continue;
 
@@ -71,8 +72,9 @@ static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
 
             AUTO_SNPRINTF(full_path, full_path_len, "%s/%s", path, d->d_name);
 
-            /* Watch subdirectory. */
-            reg_dir(ws, cur_depth + 1, full_path);
+            if(!ws->excl || regexex(ws->excl, full_path, 0, NULL, 0) != 0)
+                /* Watch subdirectory. */
+                reg_dir(ws, cur_depth + 1, full_path);
 
             free(full_path);
         }
