@@ -105,8 +105,8 @@ int sync_file(struct watch_session *ws, const char *dir, const char *file)
     int ret = spawn_rsync(ws->rsync_path, argv);
 
     /* Clean up ... */
-    FREE_STR(argv[1]);
-    FREE_STR(argv[2]);
+    FREE_MEM(argv[1]);
+    FREE_MEM(argv[2]);
 
     return ret;
 }
