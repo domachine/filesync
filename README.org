@@ -25,11 +25,14 @@
 
 * Roadmap                                                           :roadmap:
 
-** DESIGNED Package the program with CMake
+** TESTED Package the program with CMake
 
-** Version 1.0
+** Version 1.0 (current)
    Basic functionality:
    * Synchronize two directories
+
+   State:
+   - Branched
 
 ** Version 2.0
    New features:
@@ -254,9 +257,10 @@ struct dir_watch
 ***** Convention
       Top-level (src directory) is level 0.
 
-** TODO [#C] Memory error system
+*** TODO Exclude functionality
+    Makes it possible to exclude certain files from synchronization.
 
-* Future
+** TODO [#C] Memory error system
 
 ** Profile functionality
    This describes the possibility to declare filesync
@@ -266,8 +270,7 @@ struct dir_watch
 ** Daemon functionality
    This will be enabled using an init-script.
 
-** Exclude functionality
-   Makes it possible to exclude certain files from synchronization.
+* Future
 
 * Copyright
   Copyright (C) 2010, 2011  Dominik Burgdörfer <dominik.burgdoerfer@googlemail.com>
