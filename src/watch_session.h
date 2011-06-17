@@ -54,6 +54,9 @@ struct watch_session
 
     /** \brief The watch filter mask. */
     uint32_t watch_mask;
+
+    /** \brief Internal field to cache src length. */
+    int src_len;
 };
 
 /**
