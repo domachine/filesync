@@ -40,7 +40,7 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
             {NULL,    0,                 NULL, 0}
         };
 
-    const char *short_options = "r:hd:";
+    const char *short_options = "r:hd:e:";
 
     /* Loop through command line arguments
      * and interprete them. */
@@ -109,7 +109,7 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
         if(!ws->src)
             return -1;
 
-        strcpy(ws->src, argv[args]);
+        strncpy(ws->src, argv[args], ws->src_len);
 
         if(--add_args >= 1) {
             if(clone_str(&ws->target, argv[++args]) < 0)
