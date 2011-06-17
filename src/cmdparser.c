@@ -110,7 +110,7 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
         if(!ws->src)
             return -1;
 
-        strncpy(ws->src, argv[args], ws->src_len);
+        strncpy(ws->src, argv[args], ws->src_len + 1);
 
         if(--add_args >= 1) {
             if(clone_str(&ws->target, argv[++args]) < 0)
