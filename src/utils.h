@@ -23,8 +23,8 @@
 #ifndef _FILESYNC_UTILS_H_
 #define _FILESYNC_UTILS_H_
 
-/* Check string to be != NULL before freeing it. */
-#define FREE_STR(x) if(x) free(x)
+/* Check memory to be != NULL before freeing it. */
+#define FREE_MEM(x) if(x) free(x)
 
 /**
    \brief Simple datatype that implements the boolean type.
