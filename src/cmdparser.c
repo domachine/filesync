@@ -18,6 +18,8 @@
 
 #include "cmdparser.h"
 
+#include <string.h>
+
 #include <limits.h>
 #include <stdlib.h>
 #include <getopt.h>
@@ -87,7 +89,10 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
     /* Parse remaining arguments */
     if(add_args >= 1) {
 
-        if(clone_str(&ws->src, argv[args]) < 0)
+        ws->src_len = strlen(argv[args]);
+        ws->src = (char *)malloc(ws->src_len + 1);
+
+        if(!ws->src)
             return -1;
 
         if(--add_args >= 1) {
