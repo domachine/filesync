@@ -123,7 +123,7 @@ void destroy_watch_session(struct watch_session *ws);
 
 **** TODO Implement default watch-filter-mask.
      [[file:src/watch_session.c::/*%20TODO:%20Fix%20this%20with%20default%20bitmask.%20*/][file:src/watch_session.c::/* TODO: Fix this with default bitmask. */]]
-**** TODO Cache the source and the target length.
+**** TESTED Cache the source and the target length.
      Also affects [[file:src/notify.c][file:src/notify.c]]
 *** TESTED Module testing system
 
