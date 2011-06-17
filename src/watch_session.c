@@ -49,10 +49,11 @@ struct watch_session *new_watch_session()
 
     ws->watch_table = NULL;
 
-    /* TODO: Fix this with default bitmask. */
     ws->watch_mask = IN_CREATE |
         IN_MOVE |
         IN_MODIFY;
+
+    ws->excl = NULL;
 
     return ws;
 }
