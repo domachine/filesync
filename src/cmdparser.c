@@ -37,10 +37,11 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
             {"help",    no_argument,       NULL, 'h'},
             {"depth",   required_argument, NULL, 'd'},
             {"exclude", required_argument, NULL, 'e'},
-            {NULL,    0,                 NULL, 0}
+            {"daemon",  no_argument,       NULL, 'D'},
+            {NULL,    0,                   NULL, 0}
         };
 
-    const char *short_options = "r:hd:e:";
+    const char *short_options = "r:hd:e:D";
 
     /* Loop through command line arguments
      * and interprete them. */
@@ -88,6 +89,9 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
                 regerror(err_code, ws->excl, err_buf, err_len);
                 log_msg(WARN, "Failed to compile regex: %s", err_buf);
             }
+            break;
+        case 'D':
+            ws->daemon = TRUE;
             break;
         case '?':
             return -1;

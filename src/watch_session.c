@@ -55,6 +55,8 @@ struct watch_session *new_watch_session()
 
     ws->excl = NULL;
 
+    ws->daemon = FALSE;
+
     return ws;
 }
 

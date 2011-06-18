@@ -27,6 +27,9 @@
 #include <sys/inotify.h>
 #include <regex.h>
 
+/* Because of BOOL type. */
+#include "utils.h"
+
 
 /**
    \brief Stores information about a session.
@@ -64,6 +67,9 @@ struct watch_session
        be excluded from synchronization.
     */
     regex_t *excl;
+
+    /** \brief Shows if the program is intended to run as daemon. */
+    BOOL daemon;
 };
 
 /**
