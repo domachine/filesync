@@ -89,6 +89,9 @@ RUN_DIR=/tmp/filesync
 # This can be used to pass additional params to filesync.
 # (optional)
 ADDITIONAL_PARAMS=()
+
+# Specifies the log-file. (default stderr). (optional)
+LOG_FILE=
    #+END_SRC
 
 ** Depth feature
@@ -300,11 +303,13 @@ struct dir_watch
    options within a config file (profile) and call filesync
    with this config file as configuration instruction.
 
-** TODO Daemon functionality
-   
-*** IMPLEMENTED Pid-file option
+** IMPLEMENTED Daemon functionality
 
-*** TODO Log-file option
+*** TODO Initscript
+
+*** TESTED Pid-file option
+
+*** TESTED Log-file option
 
 * Future
 
