@@ -6,7 +6,7 @@
 #+KEYWORDS:
 #+LANGUAGE:  en
 #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
-#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:nil pri:nil tags:nil
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:nil pri:nil tags:not-in-toc
 #+INFOJS_OPT: view:t toc:t ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
@@ -288,9 +288,10 @@ struct dir_watch
 
 ***** Convention
       Top-level (src directory) is level 0.
-
 *** TODO Exclude functionality
     Makes it possible to exclude certain files from synchronization.
+
+*** TODO Do a clean shutdown after receiving SIGINT
 
 ** TODO [#C] Memory error system
 
