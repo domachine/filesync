@@ -148,84 +148,10 @@ int daemonize(FILE *pid_file)
     return pid;
 }
 
-int main(int argc, char **argv)
+void run_main_loop(struct watch_session *ws)
 {
-    /* Print all log messages to stderr per default. */
-    FILE *log_file_descr = stderr;
-
-    /* TODO: make the verbosity level cutomizable through command line. */
-    init_log(log_file_descr, TRUE, ALL_CHANNELS);
-
-    signal(SIGINT, clean_up);
-    signal(SIGTERM, clean_up);
-
-    /* Build new watch_session. */
-    ws = new_watch_session();
-
-    if(parse_cmd_line(ws, argc, argv) < 0)
-        return EXIT_FAILURE;
-
-    if(ws->daemon) {
-        /* Prepare everything for daemon spawning. */
-        FILE *pid_file;
-
-        if(!ws->pid_file) {
-            log_msg(WARN, "Daemon mode but no pid-file given (using stdout).");
-            pid_file = stdout;
-        }
-        else {
-            pid_file = fopen(ws->pid_file, "w");
-            if(!pid_file) {
-                log_msg(ERROR, "Failed to open pid-file: %s", strerror(errno));
-                return EXIT_FAILURE;
-            }
-        }
-
-        int ret = daemonize(pid_file);
-        if(ret < 0)
-            return EXIT_FAILURE;
-    }
-
-    if(ws->log_file) {
-        log_file_descr = fopen(ws->log_file, "w");
-
-        if(!log_file_descr) {
-            log_msg(WARN, "Failed to open log-file (using stderr).");
-
-            log_file_descr = stderr;
-        }
-
-        init_log(log_file_descr, TRUE, ALL_CHANNELS);
-    }
-
-    if(!ws) {
-        log_msg(ERROR, "Failed to allocate memory "
-                "for watch-session structure.");
-        return EXIT_FAILURE;
-    }
-
-    if(!ws->src) {
-        log_msg(ERROR, "No source given.");
-        return EXIT_FAILURE;
-    }
-
-    if(!ws->target) {
-        log_msg(ERROR, "No target given.");
-        return EXIT_FAILURE;
-    }
-
-    int src_len = ws->src_len;
-    if(ws->src[src_len - 1] == '/') {
-        ws->src[src_len - 1] = '\0';
-        --ws->src_len;
-    }
-
-    reg_dir(ws, 0, ".");
     struct inotify_event *event_buf = NULL;
 
-    /*
-      The main watch-loop.
-    */
     while((event_buf = read_event(ws->notify_descr)) != NULL) {
         log_msg(DEBUG, "Event occured ...");
 
@@ -266,7 +192,91 @@ int main(int argc, char **argv)
         }
 
         free(compl_path);
+        free(event_buf);
     }
+
+    FREE_MEM(event_buf);
+}
+
+int main(int argc, char **argv)
+{
+    /* Print all log messages to stderr per default. */
+    FILE *log_file_descr = stderr;
+
+    /* TODO: make the verbosity level cutomizable through command line. */
+    init_log(log_file_descr, TRUE, ALL_CHANNELS);
+
+    signal(SIGINT, clean_up);
+    signal(SIGTERM, clean_up);
+
+    /* Build new watch_session. */
+    ws = new_watch_session();
+
+    if(parse_cmd_line(ws, argc, argv) < 0)
+        return EXIT_FAILURE;
+
+    if(!ws) {
+        log_msg(ERROR, "Failed to allocate memory "
+                "for watch-session structure.");
+        return EXIT_FAILURE;
+    }
+
+    if(!ws->src) {
+        log_msg(ERROR, "No source given.");
+        return EXIT_FAILURE;
+    }
+
+    if(!ws->target) {
+        log_msg(ERROR, "No target given.");
+        return EXIT_FAILURE;
+    }
+
+    if(ws->daemon) {
+        /* Prepare everything for daemon spawning. */
+        FILE *pid_file;
+
+        if(!ws->pid_file) {
+            log_msg(WARN, "Daemon mode but no pid-file given (using stdout).");
+            pid_file = stdout;
+        }
+        else {
+            pid_file = fopen(ws->pid_file, "w");
+            if(!pid_file) {
+                log_msg(ERROR, "Failed to open pid-file: %s", strerror(errno));
+                return EXIT_FAILURE;
+            }
+        }
+
+        int ret = daemonize(pid_file);
+        if(ret < 0)
+            return EXIT_FAILURE;
+    }
+
+    if(ws->log_file) {
+        log_file_descr = fopen(ws->log_file, "w");
+
+        if(!log_file_descr) {
+            log_msg(WARN, "Failed to open log-file (using stderr).");
+
+            log_file_descr = stderr;
+        }
+
+        init_log(log_file_descr, TRUE, ALL_CHANNELS);
+    }
+
+
+    int src_len = ws->src_len;
+    if(ws->src[src_len - 1] == '/') {
+        ws->src[src_len - 1] = '\0';
+        --ws->src_len;
+    }
+
+    reg_dir(ws, 0, ".");
+
+    /*
+      The main watch-loop.
+    */
+    run_main_loop(ws);
 
 
     clean_up(SIGTERM);
