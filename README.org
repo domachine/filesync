@@ -299,8 +299,11 @@ struct dir_watch
    options within a config file (profile) and call filesync
    with this config file as configuration instruction.
 
-** Daemon functionality
-   This will be enabled using an init-script.
+** TODO Daemon functionality
+   
+*** IMPLEMENTED Pid-file option
+
+*** TODO Log-file option
 
 * Future
 
