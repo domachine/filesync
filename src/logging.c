@@ -49,6 +49,7 @@ void log_msg(int l, const char *fmt, ...)
 
         if(_log_nl)
             fputc('\n', _log_descr);
+        fflush(_log_descr);
     }
 }
 

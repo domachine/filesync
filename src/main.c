@@ -139,33 +139,17 @@ int daemonize(FILE *pid_file, FILE *log_descr, int log_filter)
 
 int main(int argc, char **argv)
 {
+    /* Print all log messages to stderr per default. */
+    FILE *log_file_descr = stderr;
+
     /* TODO: make the verbosity level cutomizable through command line. */
-    init_log(stderr, TRUE, ALL_CHANNELS);
+    init_log(log_file_descr, TRUE, ALL_CHANNELS);
 
     /* Build new watch_session. */
     struct watch_session *ws = new_watch_session();
 
-    if(!ws) {
-        log_msg(ERROR, "Failed to allocate memory "
-                "for watch-session structure.");
-        return EXIT_FAILURE;
-    }
-
     if(parse_cmd_line(ws, argc, argv) < 0)
         return EXIT_FAILURE;
-
-    if(!ws->src) {
-        log_msg(ERROR, "No source given.");
-        return EXIT_FAILURE;
-    }
-
-    if(!ws->target) {
-        log_msg(ERROR, "No target given.");
-        return EXIT_FAILURE;
-    }
-
-    if(ws->log_file) {
-    }
 
     if(ws->daemon) {
         /* Prepare everything for daemon spawning. */
@@ -186,6 +170,34 @@ int main(int argc, char **argv)
         int ret = daemonize(pid_file, stderr, ALL_CHANNELS);
         if(ret < 0)
             return EXIT_FAILURE;
+    }
+
+    if(ws->log_file) {
+        log_file_descr = fopen(ws->log_file, "w");
+
+        if(!log_file_descr) {
+            log_msg(WARN, "Failed to open log-file (using stderr).");
+
+            log_file_descr = stderr;
+        }
+
+        init_log(log_file_descr, TRUE, ALL_CHANNELS);
+    }
+
+    if(!ws) {
+        log_msg(ERROR, "Failed to allocate memory "
+                "for watch-session structure.");
+        return EXIT_FAILURE;
+    }
+
+    if(!ws->src) {
+        log_msg(ERROR, "No source given.");
+        return EXIT_FAILURE;
+    }
+
+    if(!ws->target) {
+        log_msg(ERROR, "No target given.");
+        return EXIT_FAILURE;
     }
 
     int src_len = ws->src_len;
