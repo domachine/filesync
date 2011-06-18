@@ -163,8 +163,10 @@ int main(int argc, char **argv)
     }
 
     int src_len = ws->src_len;
-    if(ws->src[src_len - 1] == '/')
+    if(ws->src[src_len - 1] == '/') {
         ws->src[src_len - 1] = '\0';
+        --ws->src_len;
+    }
 
     reg_dir(ws, 0, ".");
     struct inotify_event *event_buf = NULL;
