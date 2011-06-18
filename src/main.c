@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "logging.h"
 #include "watch_session.h"
@@ -43,6 +44,14 @@
 /* Holds information about the current session. */
 static struct watch_session *ws;
 
+static void clean_up(int sig)
+{
+    log_msg(INFO, "Shutting down (Signal %d occured) ...", sig);
+    destroy_watch_session(ws);
+    close_log();
+
+    exit(EXIT_SUCCESS);
+}
 
 static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
 {
@@ -112,7 +121,7 @@ static struct inotify_event* read_event(int fd)
     return buf;
 }
 
-int daemonize(FILE *pid_file, FILE *log_descr, int log_filter)
+int daemonize(FILE *pid_file)
 {
     pid_t pid, sid;
 
@@ -136,8 +145,6 @@ int daemonize(FILE *pid_file, FILE *log_descr, int log_filter)
         return -1;
     }
 
-    init_log(log_descr, TRUE, log_filter);
-
     return pid;
 }
 
@@ -149,8 +156,11 @@ int main(int argc, char **argv)
     /* TODO: make the verbosity level cutomizable through command line. */
     init_log(log_file_descr, TRUE, ALL_CHANNELS);
 
+    signal(SIGINT, clean_up);
+    signal(SIGTERM, clean_up);
+
     /* Build new watch_session. */
-     = new_watch_session();
+    ws = new_watch_session();
 
     if(parse_cmd_line(ws, argc, argv) < 0)
         return EXIT_FAILURE;
@@ -171,7 +181,7 @@ int main(int argc, char **argv)
             }
         }
 
-        int ret = daemonize(pid_file, stderr, ALL_CHANNELS);
+        int ret = daemonize(pid_file);
         if(ret < 0)
             return EXIT_FAILURE;
     }
@@ -258,8 +268,7 @@ int main(int argc, char **argv)
         free(compl_path);
     }
 
-    destroy_watch_session(ws);
-    close_log();
 
+    clean_up(SIGTERM);
     return EXIT_SUCCESS;
 }
