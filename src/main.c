@@ -117,8 +117,11 @@ int daemonize(FILE *pid_file, FILE *log_descr, int log_filter)
         log_msg(ERROR, "Failed to fork daemon process.");
         return -1;
     }
-    else if(pid > 0)
+    else if(pid > 0) {
+        fprintf(pid_file, "%d", pid);
+
         exit(EXIT_SUCCESS);
+    }
 
     /* Make sure file access is not necessarily inherited. */
     umask(0);
@@ -128,8 +131,6 @@ int daemonize(FILE *pid_file, FILE *log_descr, int log_filter)
         log_msg(ERROR, "Failed to get session id.");
         return -1;
     }
-
-    fprintf(pid_file, "%d", pid);
 
     init_log(log_descr, TRUE, log_filter);
 
@@ -150,7 +151,8 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    parse_cmd_line(ws, argc, argv);
+    if(parse_cmd_line(ws, argc, argv) < 0)
+        return EXIT_FAILURE;
 
     if(!ws->src) {
         log_msg(ERROR, "No source given.");
@@ -162,7 +164,11 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    if(ws->log_file) {
+    }
+
     if(ws->daemon) {
+        /* Prepare everything for daemon spawning. */
         FILE *pid_file;
 
         if(!ws->pid_file) {
