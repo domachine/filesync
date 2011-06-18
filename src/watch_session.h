@@ -70,6 +70,9 @@ struct watch_session
 
     /** \brief Shows if the program is intended to run as daemon. */
     BOOL daemon;
+
+    char *pid_file;
+    char *log_file;
 };
 
 /**

@@ -57,6 +57,9 @@ struct watch_session *new_watch_session()
 
     ws->daemon = FALSE;
 
+    ws->pid_file = NULL;
+    ws->log_file = NULL;
+
     return ws;
 }
 
@@ -73,6 +76,9 @@ void destroy_watch_session(struct watch_session *ws)
         regfree(ws->excl);
         free(ws->excl);
     }
+
+    FREE_MEM(ws->pid_file);
+    FREE_MEM(ws->log_file);
 
     /* TODO: Free the hash structure. */
     /* Free the structure itself. */

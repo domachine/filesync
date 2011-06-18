@@ -33,15 +33,17 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
 {
     struct option long_options[] =
         {
-            {"rsync",   required_argument, NULL, 'r'},
-            {"help",    no_argument,       NULL, 'h'},
-            {"depth",   required_argument, NULL, 'd'},
-            {"exclude", required_argument, NULL, 'e'},
-            {"daemon",  no_argument,       NULL, 'D'},
-            {NULL,    0,                   NULL, 0}
+            {"rsync",    required_argument, NULL, 'r'},
+            {"help",     no_argument,       NULL, 'h'},
+            {"depth",    required_argument, NULL, 'd'},
+            {"exclude",  required_argument, NULL, 'e'},
+            {"daemon",   no_argument,       NULL, 'D'},
+            {"pid-file", required_argument, NULL, 'p'},
+            {"log-file", required_argument, NULL, 'l'},
+            {NULL,       0,                 NULL, 0}
         };
 
-    const char *short_options = "r:hd:e:D";
+    const char *short_options = "r:hd:e:Dp:l:";
 
     /* Loop through command line arguments
      * and interprete them. */
@@ -62,6 +64,22 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
         case 'r':
         {
             int r = clone_str(&ws->rsync_path, optarg);
+
+            /* Check that memory was successfully allocated. */
+            assert(r == 0);
+            break;
+        }
+        case 'p':
+        {
+            int r = clone_str(&ws->pid_file, optarg);
+
+            /* Check that memory was successfully allocated. */
+            assert(r == 0);
+            break;
+        }
+        case 'l':
+        {
+            int r = clone_str(&ws->log_file, optarg);
 
             /* Check that memory was successfully allocated. */
             assert(r == 0);
