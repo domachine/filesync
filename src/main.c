@@ -25,6 +25,7 @@
 #include <sys/inotify.h>
 #include <sys/stat.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include "logging.h"
 #include "watch_session.h"
@@ -105,6 +106,34 @@ static struct inotify_event* read_event(int fd)
     }
 
     return buf;
+}
+
+int daemonize(FILE *pid_file, FILE *log_descr, int log_filter)
+{
+    pid_t pid, sid;
+
+    pid = fork();
+    if(pid < 0) {
+        log_msg(ERROR, "Failed to fork daemon process.");
+        return -1;
+    }
+    else if(pid > 0)
+        exit(EXIT_SUCCESS);
+
+    /* Make sure file access is not necessarily inherited. */
+    umask(0);
+
+    sid = setsid();
+    if(sid < 0) {
+        log_msg(ERROR, "Failed to get session id.");
+        return -1;
+    }
+
+    fprintf(pid_file, "%d", pid);
+
+    init_log(log_descr, TRUE, log_filter);
+
+    return pid;
 }
 
 int main(int argc, char **argv)
