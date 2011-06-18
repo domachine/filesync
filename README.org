@@ -6,8 +6,8 @@
 #+KEYWORDS:
 #+LANGUAGE:  en
 #+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
-#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:nil pri:nil tags:not-in-toc
-#+INFOJS_OPT: view:t toc:t ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
 #+LINK_UP:   
@@ -156,11 +156,12 @@ void destroy_watch_session(struct watch_session *ws);
     /rsync-cmd-cache/ is a buffer for the prebuild ([[Build rsync command]]) rsync
     command.
 
-**** TODO Free the hash structure
+**** OBSOLETE Free the hash structure
      [[file:src/watch_session.c::/*%20TODO:%20Free%20the%20hash%20structure.%20*/][file:src/watch_session.c::/* TODO: Free the hash structure. */]]
 
-**** TODO Implement default watch-filter-mask.
+**** TESTED Implement default watch-filter-mask.
      [[file:src/watch_session.c::/*%20TODO:%20Fix%20this%20with%20default%20bitmask.%20*/][file:src/watch_session.c::/* TODO: Fix this with default bitmask. */]]
+
 **** TESTED Cache the source and the target length.
      Also affects [[file:src/notify.c][file:src/notify.c]]
 *** TESTED Module testing system
@@ -266,7 +267,7 @@ int parse_cmd_line(struct watch_session *ws, int argc, const char **argv);
     via the command line interface to avoid attackers to read the
     password via the process table.
 
-*** TODO [#B] Inotify watch loop
+*** TESTED [#B] Inotify watch loop
 **** TESTED File Watch structure
      [[file:src/notify.h]]
      [[file:src/notify.c]]
@@ -286,15 +287,15 @@ struct dir_watch
     UT_hash_handle hh;
 };
      #+END_SRC
-**** TODO Depth recording
+**** TESTED Depth recording
      [[file:src/main.c]]
 
 ***** Convention
       Top-level (src directory) is level 0.
-*** TODO Exclude functionality
+*** TESTED Exclude functionality
     Makes it possible to exclude certain files from synchronization.
 
-*** TODO Do a clean shutdown after receiving SIGINT
+*** TESTED Do a clean shutdown after receiving SIGINT
 
 ** TODO [#C] Memory error system
 
@@ -303,9 +304,9 @@ struct dir_watch
    options within a config file (profile) and call filesync
    with this config file as configuration instruction.
 
-** IMPLEMENTED Daemon functionality
+** TESTED Daemon functionality
 
-*** TODO Initscript
+*** TESTED Initscript
 
 *** TESTED Pid-file option
 
