@@ -1,0 +1,116 @@
+#!/bin/bash
+
+# Predefined variables:
+DEPTH=-1
+SOURCE_DIR=
+TARGET_DIR=
+EXCLUDE=
+FILESYNC_EXE=filesync
+RUN_DIR=
+ADDITIONAL_PARAMS=
+LOG_FILE=
+
+if [[ -f "$HOME/.filesyncrc" ]]; then
+    . "$HOME/.filesyncrc"
+elif [[ -f /etc/filesyncrc ]]; then
+    . /etc/filesyncrc
+#else
+#    echo $(basename "$0")": No config file found."
+#     exit 1
+fi
+
+
+APP=$(basename "$0")
+
+is_num()
+{
+    echo "$1" | egrep '^[0-9]+(\.[0-9]+)?$' &>/dev/null
+    return $?
+}
+
+check_run_dir()
+{
+    [[ -z $RUN_DIR ]] || return
+
+    RUN_DIR="/tmp/filesync"
+
+    [[ -d "/tmp/filesync" ]] || mkdir "/tmp/filesync"
+}
+
+setup_params()
+{
+    for i in "${ADDITIONAL_PARAMS[@]}"; do
+        [[ -z "$i" ]] && continue;
+
+        echo -en "$i\0"
+    done
+
+    echo -ne "--daemon\0"
+    is_num "$DEPTH" && echo -en "--depth\0$DEPTH\0"
+    [[ -z $EXCLUDE ]] || echo -en "--exclude\0$EXCLUDE\0"
+
+    echo -en "--pid-file\0"
+    local pid_file=$(mktemp "$RUN_DIR/inst.XXXXXX")
+
+    echo -en "$pid_file\0"
+
+    [[ -z $LOG_FILE ]] || echo -en "--log-file\0$LOG_FILE\0"
+
+    if ! [[ -z $SOURCE_DIR ]]; then
+        echo -en "$SOURCE_DIR\0"
+    else
+        echo "$APP: Source directory not specified!" >&2
+        exit 1
+    fi
+
+    if ! [[ -z $TARGET_DIR ]]; then
+        echo -en "$TARGET_DIR"
+    else
+        echo "$APP: Target directory not specified!" >&2
+        exit 1
+    fi
+}
+
+
+while ! [[ -z "$1" ]]; do
+    case "$1" in
+        start)
+            check_run_dir
+
+            setup_params | xargs -0 "$FILESYNC_EXE"
+            ;;
+        stop)
+            check_run_dir
+            if [[ -z "$2" ]]; then
+                shift
+
+                (
+                    cd "$RUN_DIR"
+                    for i in *; do
+                        kill $(cat "$i") && rm "$i"
+                    done
+                )
+            else
+                kill "$2" && rm "$RUN_DIR/$2"
+            fi
+            ;;
+        -c|--config)
+            if [[ -z "$2" ]]; then
+                echo "$APP: $1: Option requires an argument."
+                exit 1
+            else
+                . "$2"
+                shift
+            fi
+            ;;
+        help)
+            echo "Usage: $APP [-c, --config <CONFIG-FILE> start|stop|help"
+            exit 0
+            ;;
+        *)
+            echo "$APP: $1: Invalid argument." >&2
+            ;;
+    esac
+
+    shift
+done
