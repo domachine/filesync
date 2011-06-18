@@ -40,6 +40,10 @@
         snprintf(str, n, fmt, args);                \
     } while(0)
 
+/* Holds information about the current session. */
+static struct watch_session *ws;
+
+
 static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
 {
     /* Check if depth limit was reached. */
@@ -146,7 +150,7 @@ int main(int argc, char **argv)
     init_log(log_file_descr, TRUE, ALL_CHANNELS);
 
     /* Build new watch_session. */
-    struct watch_session *ws = new_watch_session();
+     = new_watch_session();
 
     if(parse_cmd_line(ws, argc, argv) < 0)
         return EXIT_FAILURE;
