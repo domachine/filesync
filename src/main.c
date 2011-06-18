@@ -162,6 +162,26 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    if(ws->daemon) {
+        FILE *pid_file;
+
+        if(!ws->pid_file) {
+            log_msg(WARN, "Daemon mode but no pid-file given (using stdout).");
+            pid_file = stdout;
+        }
+        else {
+            pid_file = fopen(ws->pid_file, "w");
+            if(!pid_file) {
+                log_msg(ERROR, "Failed to open pid-file: %s", strerror(errno));
+                return EXIT_FAILURE;
+            }
+        }
+
+        int ret = daemonize(pid_file, stderr, ALL_CHANNELS);
+        if(ret < 0)
+            return EXIT_FAILURE;
+    }
+
     int src_len = ws->src_len;
     if(ws->src[src_len - 1] == '/') {
         ws->src[src_len - 1] = '\0';
@@ -171,6 +191,9 @@ int main(int argc, char **argv)
     reg_dir(ws, 0, ".");
     struct inotify_event *event_buf = NULL;
 
+    /*
+      The main watch-loop.
+    */
     while((event_buf = read_event(ws->notify_descr)) != NULL) {
         log_msg(DEBUG, "Event occured ...");
 
