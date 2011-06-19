@@ -32,9 +32,6 @@ if [[ -f "$HOME/.filesyncrc" ]]; then
     . "$HOME/.filesyncrc"
 elif [[ -f /etc/filesyncrc ]]; then
     . /etc/filesyncrc
-#else
-#    echo $(basename "$0")": No config file found."
-#     exit 1
 fi
 
 
@@ -102,12 +99,13 @@ while ! [[ -z "$1" ]]; do
             if [[ -z "$2" ]]; then
                 shift
 
-                (
-                    cd "$RUN_DIR"
-                    for i in *; do
+                if [[ $(ls "$RUN_DIR"|wc -l) != 0 ]]; then
+                    for i in "$RUN_DIR"/*; do
                         kill $(cat "$i") && rm "$i"
                     done
-                )
+                else
+                    echo "$APP: No instances running."
+                fi
             else
                 kill "$2" && rm "$RUN_DIR/$2"
             fi
