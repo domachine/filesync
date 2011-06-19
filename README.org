@@ -312,7 +312,14 @@ struct dir_watch
 
 *** TESTED Log-file option
 
-* Future
+* Plans
+** TODO Design filesync as daemon that called for work
+   Filesync should be a daemon that runs in memory and waits
+   for requests that tell him to watch a certain directory and
+   synchronize it with another.
+   
+*** TODO Interface to communicate
+    Sockets will be used as communication interface.
 
 * Copyright
   Copyright (C) 2010, 2011  Dominik Burgdörfer <dominik.burgdoerfer@googlemail.com>
