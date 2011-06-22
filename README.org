@@ -313,13 +313,41 @@ struct dir_watch
 *** TESTED Log-file option
 
 * Plans
-** TODO Design filesync as daemon that called for work
+** TODO Design filesync as daemon that is called for work
    Filesync should be a daemon that runs in memory and waits
    for requests that tell him to watch a certain directory and
    synchronize it with another.
    
 *** TODO Interface to communicate
-    Sockets will be used as communication interface.
+    Unix-Sockets will be used as communication interface.
+
+*** TODO Communication protocol
+
+    |------------------+----------+-----|
+    | Command (1 byte) | Argument | EOF |
+    |------------------+----------+-----|
+
+    #+BEGIN_SRC: C
+enum command {
+    ADD_JOB,
+    SHUTDOWN
+};
+    #+END_SRC
+
+    The first byte of the message is the command byte. It specifies
+    what the daemon should do. The rest of the message is reserved
+    for arguments for the command.
+
+**** Commands
+
+     | Command  | Arguments                              | Description                                 |
+     |----------+----------------------------------------+---------------------------------------------|
+     | ADD_JOB  | <src>\0<target>\0<depth>\0<watch-mask> | This command                                |
+     |          |                                        | takes the src-directory, target-            |
+     |          |                                        | directory, depth and watch-mask             |
+     |          |                                        | seperated by null-bytes. It creates then    |
+     |          |                                        | a new watch-session and launches it.        |
+     | SHUTDOWN | <none>                                 | This argument simply shuts the daemon down. |
 
 * Copyright
   Copyright (C) 2010, 2011  Dominik Burgdörfer <dominik.burgdoerfer@googlemail.com>
