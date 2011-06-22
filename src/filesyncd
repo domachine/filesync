@@ -87,12 +87,15 @@ setup_params()
 }
 
 
+nocommand=true
+
 while ! [[ -z "$1" ]]; do
     case "$1" in
         start)
             check_run_dir
 
             setup_params | xargs -0 "$FILESYNC_EXE"
+            nocommand=false
             ;;
         stop)
             check_run_dir
@@ -109,6 +112,7 @@ while ! [[ -z "$1" ]]; do
             else
                 kill "$2" && rm "$RUN_DIR/$2"
             fi
+            nocommand=false
             ;;
         -c|--config)
             if [[ -z "$2" ]]; then
@@ -130,3 +134,10 @@ while ! [[ -z "$1" ]]; do
 
     shift
 done
+
+# If no action chosen, assume `start'
+if $nocommand; then
+    check_run_dir
+
+    setup_params | xargs -0 "$FILESYNC_EXE"
+fi
