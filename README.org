@@ -50,13 +50,17 @@
 * User Interface                                                         :ui:
 ** Program options
 
-   | Option       | Description                                      |
-   |--------------+--------------------------------------------------|
-   | -r, --rsync  | Rsync executable path.                           |
-   | -s, --source | The path to the source directory.                |
-   | -t, --target | The path to the target directory.                |
-   | -d, --depth  | The depth to dive into the                       |
-   |              | directory.                                       |
+   | Option         | Description                                            |
+   |----------------+--------------------------------------------------------|
+   | -r, --rsync    | Rsync executable path.                                 |
+   | -s, --source   | The path to the source directory.                      |
+   | -t, --target   | The path to the target directory.                      |
+   | -d, --depth    | The depth to dive into the                             |
+   |                | directory.                                             |
+   | -D, --daemon   | Runs filesync as daemon.                               |
+   | -p, --pid-file | Sets the file in which the daemon writes its PID.      |
+   | -l, --log-file | The log-file to redirect messages to (default: stderr). |
+
 * Features                                                         :features:
 
 ** Daemon functionality
