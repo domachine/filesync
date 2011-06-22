@@ -23,8 +23,20 @@
 #ifndef _FILESYNC_UTILS_H_
 #define _FILESYNC_UTILS_H_
 
+#include <stdlib.h>
+#include <assert.h>
+#include <stdio.h>
+
+
 /* Check memory to be != NULL before freeing it. */
 #define FREE_MEM(x) if(x) free(x)
+
+/* Automates the malloc -> snprintf stuff. */
+#define AUTO_SNPRINTF(str, n, fmt, args ...) do {   \
+        str = (char *)malloc(n);                    \
+        assert(str);                                \
+        snprintf(str, n, fmt, args);                \
+    } while(0)
 
 /**
    \brief Simple datatype that implements the boolean type.
