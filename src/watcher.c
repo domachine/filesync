@@ -160,10 +160,10 @@ void run_main_loop(struct watch_session *ws)
                 reg_dir(ws, dw->depth_level + 1, rel_path);
             }
 
-            log_msg(DEBUG, "Synchronizing file: %s/%s", dw->path, event_buf->name);
-
-            if(!ws->excl || regexec(ws->excl, compl_path, 0, NULL, 0) != 0)
+            if(!ws->excl || regexec(ws->excl, rel_path, 0, NULL, 0) != 0) {
+                log_msg(DEBUG, "Synchronizing file: %s", rel_path);
                 sync_file(ws, dw->path, event_buf->name);
+            }
 
             free(rel_path);
         }
