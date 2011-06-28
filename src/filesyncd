@@ -20,13 +20,15 @@
 
 # Predefined variables:
 DEPTH=-1
-SOURCE_DIR=
-TARGET_DIR=
-EXCLUDE=
+#SOURCE_DIR=
+#TARGET_DIR=
+#EXCLUDE=
 FILESYNC_EXE=filesync
 RUN_DIR=
 ADDITIONAL_PARAMS=
-LOG_FILE=
+
+# Is obsolete.
+#LOG_FILE=
 
 if [[ -f "$HOME/.filesyncrc" ]]; then
     . "$HOME/.filesyncrc"
@@ -43,6 +45,11 @@ is_num()
     return $?
 }
 
+msg()
+{
+    echo "$APP: $@" >&2
+}
+
 check_run_dir()
 {
     [[ -z $RUN_DIR ]] || return
@@ -54,36 +61,63 @@ check_run_dir()
 
 setup_params()
 {
+    [[ -z $LOG_FILE ]] || msg "LOG_FILE setting is obsolete" >&2
     for i in "${ADDITIONAL_PARAMS[@]}"; do
         [[ -z "$i" ]] && continue;
 
         echo -en "$i\0"
     done
 
+    local proc_dir=$(mktemp -d "$RUN_DIR/fs.XXXXXX")
+
     echo -ne "--daemon\0"
     is_num "$DEPTH" && echo -en "--depth\0$DEPTH\0"
-    [[ -z $EXCLUDE ]] || echo -en "--exclude\0$EXCLUDE\0"
+    [[ -z $3 ]] || echo -en "--exclude\0$3\0"
 
     echo -en "--pid-file\0"
-    local pid_file=$(mktemp "$RUN_DIR/inst.XXXXXX")
+    local pid_file="$proc_dir/pid"
+    local log_file="$proc_dir/log"
 
     echo -en "$pid_file\0"
 
-    [[ -z $LOG_FILE ]] || echo -en "--log-file\0$LOG_FILE\0"
+    echo -en "--log-file\0$log_file\0"
 
-    if ! [[ -z $SOURCE_DIR ]]; then
-        echo -en "$SOURCE_DIR\0"
+    if ! [[ -z $1 ]]; then
+        echo -en "$1\0"
     else
-        echo "$APP: Source directory not specified!" >&2
+        msg "Source directory not specified!" >&2
         exit 1
     fi
 
-    if ! [[ -z $TARGET_DIR ]]; then
-        echo -en "$TARGET_DIR"
+    if ! [[ -z $2 ]]; then
+        echo -en "$2"
     else
-        echo "$APP: Target directory not specified!" >&2
+        msg "Target directory not specified!" >&2
         exit 1
     fi
+}
+
+setup_processes()
+{
+    local mod
+    let mod=${#JOBS[@]}%3
+
+    (( mod == 0 )) || {
+        msg "Incomplete JOB tuple."
+        exit 1
+    }
+
+    check_run_dir
+
+    while (( ${#JOBS[@]} > 0 )); do
+        setup_params "${JOBS[0]}" "${JOBS[1]}" "${JOBS[2]}" | xargs -0 "$FILESYNC_EXE"
+
+        unset JOBS[0]
+        unset JOBS[1]
+        unset JOBS[2]
+
+        JOBS=("${JOBS[@]}")
+    done
 }
 
 
@@ -92,9 +126,7 @@ nocommand=true
 while ! [[ -z "$1" ]]; do
     case "$1" in
         start)
-            check_run_dir
-
-            setup_params | xargs -0 "$FILESYNC_EXE"
+            setup_processes
             nocommand=false
             ;;
         stop)
@@ -104,19 +136,19 @@ while ! [[ -z "$1" ]]; do
 
                 if [[ $(ls "$RUN_DIR"|wc -l) != 0 ]]; then
                     for i in "$RUN_DIR"/*; do
-                        kill $(cat "$i") && rm "$i"
+                        kill $(cat "$i/pid") && rm -r "$i"
                     done
                 else
-                    echo "$APP: No instances running."
+                    msg "No instances running."
                 fi
             else
-                kill "$2" && rm "$RUN_DIR/$2"
+                kill "$2" && rm -r "$RUN_DIR/$2"
             fi
             nocommand=false
             ;;
         -c|--config)
             if [[ -z "$2" ]]; then
-                echo "$APP: $1: Option requires an argument."
+                msg "$1: Option requires an argument."
                 exit 1
             else
                 . "$2"
@@ -128,7 +160,7 @@ while ! [[ -z "$1" ]]; do
             exit 0
             ;;
         *)
-            echo "$APP: $1: Invalid argument." >&2
+            msg "$1: Invalid argument." >&2
             ;;
     esac
 
@@ -137,7 +169,5 @@ done
 
 # If no action chosen, assume `start'
 if $nocommand; then
-    check_run_dir
-
-    setup_params | xargs -0 "$FILESYNC_EXE"
+    setup_processes
 fi
