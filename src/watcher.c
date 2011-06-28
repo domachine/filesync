@@ -172,7 +172,7 @@ void run_main_loop(struct watch_session *ws)
         free(event_buf);
     }
 
-    FREE_MEM(event_buf);
+    /*FREE_MEM(event_buf);*/
 }
 
 int run_watcher(struct watch_session *ws)
