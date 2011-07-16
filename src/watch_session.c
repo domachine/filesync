@@ -35,14 +35,14 @@ struct watch_session *new_watch_session()
         return NULL;
 
     /* Normalize all values to clear defaults. */
-    ws->src = NULL;
+    ws->src.str = NULL;
     ws->target = NULL;
     ws->rsync_path = NULL;
 
     clone_str(&ws->rsync_path, "rsync");
 
     ws->depth = -1;
-    ws->src_len = 0;
+    ws->src.len = 0;
     ws->notify_descr = inotify_init();
 
     assert(ws->notify_descr);
@@ -68,7 +68,7 @@ void destroy_watch_session(struct watch_session *ws)
     assert(ws);
 
     /* Do the garbage collection. */
-    FREE_MEM(ws->src);
+    FREE_MEM(ws->src.str);
     FREE_MEM(ws->target);
     FREE_MEM(ws->rsync_path);
 

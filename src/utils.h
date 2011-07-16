@@ -49,4 +49,10 @@ typedef enum
 
 int clone_str(char **dest, const char *src);
 
+struct str_buf
+{
+    char *str;
+    int len;
+};
+
 #endif  /* _FILESYNC_UTILS_H_ */

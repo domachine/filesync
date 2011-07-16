@@ -39,7 +39,7 @@
 struct watch_session
 {
     /** \brief The src directory which is watched. */
-    char *src;
+    struct str_buf src;
 
     /** \brief The target which will be synchronized. */
     char *target;
@@ -60,7 +60,7 @@ struct watch_session
     uint32_t watch_mask;
 
     /** \brief Internal field to cache src length. */
-    int src_len;
+    /*int src_len;*/
 
     /**
        \brief Regular expression that specifies files that should

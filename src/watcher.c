@@ -36,9 +36,9 @@ static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
     if(ws->depth > -1 && cur_depth > ws->depth)
         return 0;
 
-    int compl_path_len = ws->src_len + 1 + strlen(path) + 1;
+    int compl_path_len = ws->src.len + 1 + strlen(path) + 1;
     char *compl_path;
-    AUTO_SNPRINTF(compl_path, compl_path_len, "%s/%s", ws->src, path);
+    AUTO_SNPRINTF(compl_path, compl_path_len, "%s/%s", ws->src.str, path);
 
     DIR *cur_dir = opendir(compl_path);
     free(compl_path);
@@ -137,12 +137,12 @@ void run_main_loop(struct watch_session *ws)
 
         struct stat affec_file;
 
-        int compl_path_len = ws->src_len + 1 +
+        int compl_path_len = ws->src.len + 1 +
             strlen(dw->path) + 1 +
             strlen(event_buf->name) + 1;
 
         char *compl_path;
-        AUTO_SNPRINTF(compl_path, compl_path_len, "%s/%s/%s", ws->src, dw->path, event_buf->name);
+        AUTO_SNPRINTF(compl_path, compl_path_len, "%s/%s/%s", ws->src.str, dw->path, event_buf->name);
 
         /* Check the file-type of the file reported by inotify. */
         if(stat(compl_path, &affec_file) < 0)

@@ -33,8 +33,8 @@ int main()
     struct watch_session *ws = new_watch_session();
     assert(ws);
 
-    clone_str(&ws->src, "test-src");
-    ws->src_len = strlen(ws->src);
+    clone_str(&ws->src.str, "test-src");
+    ws->src.len = strlen(ws->src.str);
 
     clone_str(&ws->target, "test-target");
 

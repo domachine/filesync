@@ -60,7 +60,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    if(!ws->src) {
+    if(!ws->src.str) {
         log_msg(ERROR, "No source given.");
         return EXIT_FAILURE;
     }
@@ -70,10 +70,10 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    int src_len = ws->src_len;
-    if(ws->src[src_len - 1] == '/') {
-        ws->src[src_len - 1] = '\0';
-        --ws->src_len;
+    int src_len = ws->src.len;
+    if(ws->src.str[src_len - 1] == '/') {
+        ws->src.str[src_len - 1] = '\0';
+        --ws->src.len;
     }
 
     int ret = run_watcher(ws);

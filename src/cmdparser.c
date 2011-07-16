@@ -126,13 +126,13 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
     /* Parse remaining arguments */
     if(add_args >= 1) {
 
-        ws->src_len = strlen(argv[args]);
-        ws->src = (char *)malloc(ws->src_len + 1);
+        ws->src.len = strlen(argv[args]);
+        ws->src.str = (char *)malloc(ws->src.len + 1);
 
-        if(!ws->src)
-            return -1;
+        /* if(!ws->src) */
+        /*     return -1; */
 
-        strncpy(ws->src, argv[args], ws->src_len + 1);
+        strncpy(ws->src.str, argv[args], ws->src.len + 1);
 
         if(--add_args >= 1) {
             if(clone_str(&ws->target, argv[++args]) < 0)
