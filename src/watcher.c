@@ -83,9 +83,7 @@ static struct inotify_event* read_event(int fd)
     struct inotify_event* buf = NULL;
 
     /* Allocate memory. */
-    buf = (struct inotify_event*)malloc(EVENT_SIZE);
-
-    assert(buf);
+    buf = (struct inotify_event*)f_malloc(EVENT_SIZE);
 
     ssize_t nbytes = read(fd, buf, EVENT_SIZE);
 
@@ -171,8 +169,6 @@ void run_main_loop(struct watch_session *ws)
         free(compl_path);
         free(event_buf);
     }
-
-    /*FREE_MEM(event_buf);*/
 }
 
 int run_watcher(struct watch_session *ws)

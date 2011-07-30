@@ -36,7 +36,7 @@ int install_dir_watch(struct watch_session *ws, const char *path, int depth)
 
     /* Turn relative path into full path. */
     int path_len = ws->src.len + 1 + strlen(path) + 1;
-    char *full_path = (char *)malloc(path_len);
+    char *full_path = (char *)f_malloc(path_len);
 
     if(!full_path)
         return -2;
@@ -45,7 +45,7 @@ int install_dir_watch(struct watch_session *ws, const char *path, int depth)
 
     /* Build watch-table entry. */
     struct dir_watch *w =
-        (struct dir_watch *)malloc(sizeof(struct dir_watch));
+        (struct dir_watch *)f_malloc(sizeof(struct dir_watch));
 
     assert(w);
 

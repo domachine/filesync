@@ -22,6 +22,8 @@
 
 #include <assert.h>
 
+#include "logging.h"
+
 
 int clone_str(char **dest, const char *src)
 {
@@ -35,4 +37,16 @@ int clone_str(char **dest, const char *src)
     strncpy(*dest, src, src_size);
 
     return 0;
+}
+
+
+void *f_malloc(size_t s)
+{
+    void *mem = malloc(s);
+    if(!mem) {
+        log_msg(ERROR, "Failed to allocate memory.");
+        abort();
+    }
+
+    return mem;
 }

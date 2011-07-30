@@ -95,14 +95,12 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
             }
             break;
         case 'e':
-            ws->excl = (regex_t *)malloc(sizeof(regex_t));
-            assert(ws->excl);
+            ws->excl = (regex_t *)f_malloc(sizeof(regex_t));
 
             int err_code;
             if((err_code = regcomp(ws->excl, optarg, REG_EXTENDED)) != 0) {
                 size_t err_len = regerror(err_code, ws->excl, NULL, 0);
-                char *err_buf = (char *)malloc(err_len);
-                assert(err_buf);
+                char *err_buf = (char *)f_malloc(err_len);
 
                 regerror(err_code, ws->excl, err_buf, err_len);
                 log_msg(WARN, "Failed to compile regex: %s", err_buf);
@@ -127,7 +125,7 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
     if(add_args >= 1) {
 
         ws->src.len = strlen(argv[args]);
-        ws->src.str = (char *)malloc(ws->src.len + 1);
+        ws->src.str = (char *)f_malloc(ws->src.len + 1);
 
         /* if(!ws->src) */
         /*     return -1; */

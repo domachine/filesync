@@ -29,7 +29,7 @@
 struct watch_session *new_watch_session()
 {
     struct watch_session *ws;
-    ws = (struct watch_session *)malloc(sizeof(struct watch_session));
+    ws = (struct watch_session *)f_malloc(sizeof(struct watch_session));
 
     if(!ws)
         return NULL;

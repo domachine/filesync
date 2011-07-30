@@ -33,8 +33,7 @@
 
 /* Automates the malloc -> snprintf stuff. */
 #define AUTO_SNPRINTF(str, n, fmt, args ...) do {   \
-        str = (char *)malloc(n);                    \
-        assert(str);                                \
+        str = (char *)f_malloc(n);                  \
         snprintf(str, n, fmt, args);                \
     } while(0)
 
@@ -48,6 +47,12 @@ typedef enum
 } BOOL;
 
 int clone_str(char **dest, const char *src);
+
+/**
+   \brief Safe implementation of malloc, which aborts
+   when an memory error occurs.
+*/
+void *f_malloc(size_t s);
 
 struct str_buf
 {

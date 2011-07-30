@@ -76,14 +76,14 @@ int sync_file(struct watch_session *ws, const char *dir, const char *file)
 {
     char **argv;
 
-    argv = (char **)malloc(5 * sizeof(char *));
+    argv = (char **)f_malloc(5 * sizeof(char *));
 
     argv[0] = ws->rsync_path;
 
     /* TODO: Cache ws->src length. */
     /* Create source argument. */
     int src_len = ws->src.len + strlen(dir) + strlen(file) + 3; /* +3 because of slashes and \0 */
-    argv[1] = (char *)malloc(src_len);
+    argv[1] = (char *)f_malloc(src_len);
 
     CHECK_PTR(argv[1]);
 
@@ -92,7 +92,7 @@ int sync_file(struct watch_session *ws, const char *dir, const char *file)
 
     /* Create target argument. */
     int target_len = strlen(ws->target) + strlen(dir) + 2; /* +2 because of slashes and \0 */
-    argv[2] = (char *)malloc(target_len);
+    argv[2] = (char *)f_malloc(target_len);
 
     CHECK_PTR(argv[2]);
 
