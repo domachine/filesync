@@ -45,7 +45,7 @@ static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
     if(ws->depth > -1 && cur_depth > ws->depth)
         return 0;
 
-    cpath = (char *)malloc(ws->src.len + 1 + strlen(path) + 1);
+    cpath = (char *)f_malloc(ws->src.len + 1 + strlen(path) + 1);
     sprintf(cpath, "%s/%s", ws->src.str, path);
 
     dirhandle = opendir(cpath);
@@ -66,7 +66,7 @@ static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
                 continue;
 
             /* Turn relative path into complete path. */
-            cpath = (char *)malloc(path_len + 1 + strlen(dir_entry->d_name) + 1);
+            cpath = (char *)f_malloc(path_len + 1 + strlen(dir_entry->d_name) + 1);
             sprintf(cpath, "%s/%s", path, dir_entry->d_name);
 
             log_msg(DEBUG, "Checking `%s'.", cpath);
