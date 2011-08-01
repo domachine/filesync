@@ -131,57 +131,63 @@ int daemonize(FILE *pid_file)
 
 void run_main_loop(struct watch_session *ws)
 {
-    struct inotify_event *event_buf = NULL;
+    struct inotify_event *ev_buf;
+    struct dir_watch *ev_src;  /* The source directory of and event. */
+    struct stat s_ev_src;  /* Stat entry for the source directory. */
+    char *cpath;  /* Complete path. */
+    char *rel_path;  /* Relative path of the source directory. */
 
-    while((event_buf = read_event(ws->notify_descr)) != NULL) {
+
+    while((ev_buf = read_event(ws->notify_descr)) != NULL) {
         log_msg(DEBUG, "Event occured ...");
 
-        struct dir_watch *dw = get_dir_watch(ws, event_buf->wd);
-        assert(dw);
+        /* Get the entry from the watch table. */
+        ev_src = get_dir_watch(ws, ev_buf->wd);
+        assert(ev_src);
 
-        struct stat affec_file;
-
-        int compl_path_len = ws->src.len + 1 +
-            strlen(dw->path) + 1 +
-            strlen(event_buf->name) + 1;
-
-        char *compl_path;
-        AUTO_SNPRINTF(compl_path, compl_path_len, "%s/%s/%s", ws->src.str, dw->path, event_buf->name);
+        cpath = (char *)f_malloc(ws->src.len + 1 +
+                                 strlen(ev_src->path) + 1 +
+                                 strlen(ev_buf->name) + 1);
+        sprintf(cpath, "%s/%s/%s", ws->src.str, ev_src->path, ev_buf->name);
 
         /* Check the file-type of the file reported by inotify. */
-        if(stat(compl_path, &affec_file) < 0)
-            log_msg(WARN, "Stat failed for `%s': %s", compl_path, strerror(errno));
+        if(stat(cpath, &s_ev_src) < 0)
+            log_msg(WARN, "Stat failed for `%s': %s", cpath, strerror(errno));
         else {
-            int rel_path_len = strlen(dw->path) + 1 + strlen(event_buf->name) + 1;
-            char *rel_path;
-            AUTO_SNPRINTF(rel_path, rel_path_len, "%s/%s", dw->path, event_buf->name);
+            rel_path = (char *)f_malloc(strlen(ev_src->path) + 1 +
+                                        strlen(ev_buf->name) + 1);
+            sprintf(rel_path, "%s/%s", ev_src->path, ev_buf->name);
 
-            if(S_ISDIR(affec_file.st_mode) && (event_buf->mask & IN_CREATE) == IN_CREATE) {
+            if(S_ISDIR(s_ev_src.st_mode) &&
+               (ev_buf->mask & IN_CREATE) == IN_CREATE) {
                 /* The file is a directory (newly created). So add it to the
                    watch-table. */
                 log_msg(DEBUG, "Adding newly created directory: %s", rel_path);
 
-                reg_dir(ws, dw->depth_level + 1, rel_path);
+                reg_dir(ws, ev_src->depth_level + 1, rel_path);
             }
 
             if(!ws->excl || regexec(ws->excl, rel_path, 0, NULL, 0) != 0) {
                 log_msg(DEBUG, "Synchronizing file: %s", rel_path);
-                sync_file(ws, dw->path, event_buf->name);
+                sync_file(ws, ev_src->path, ev_buf->name);
             }
 
             free(rel_path);
         }
 
-        free(compl_path);
-        free(event_buf);
+        free(cpath);
+        free(ev_buf);
     }
 }
 
 int run_watcher(struct watch_session *ws)
 {
+    FILE *pid_file;  /* File descriptor for pid file. */
+    FILE *log_file_descr;  /* Holds log file descriptor. */
+
+
     if(ws->daemon) {
         /* Prepare everything for daemon spawning. */
-        FILE *pid_file;
 
         if(!ws->pid_file) {
             log_msg(WARN, "Daemon mode but no pid-file given (using stdout).");
@@ -195,12 +201,12 @@ int run_watcher(struct watch_session *ws)
             }
         }
 
-        int ret = daemonize(pid_file);
-        if(ret < 0)
+        if(daemonize(pid_file) < 0)
             return EXIT_FAILURE;
     }
 
-    FILE *log_file_descr = stderr;
+    /* Stderr is fallback log descriptor. */
+    log_file_descr = stderr;
 
     if(ws->log_file) {
         log_file_descr = fopen(ws->log_file, "w");
@@ -213,7 +219,6 @@ int run_watcher(struct watch_session *ws)
     }
 
     init_log(log_file_descr, TRUE, ALL_CHANNELS);
-
     reg_dir(ws, 0, ".");
 
     /*
