@@ -37,6 +37,11 @@ static int spawn_rsync(const char *rsync_path, char *const *argv)
 {
     int pid;
     int fd[2];
+    char buf[256];  /* Buffer to hold rsync messages. */
+    FILE *rsync_out;  /* rsync output stdio file handle. */
+    int ret_code;  /* Holds the return code of the rsync process. */
+
+
     if(pipe(fd) < 0) return -1;
 
     if((pid = fork()) == -1)
@@ -58,14 +63,13 @@ static int spawn_rsync(const char *rsync_path, char *const *argv)
 
     close(fd[1]);
 
-    char buf;
-
     log_msg(DEBUG, "Back to parent");
-    /* FIXME: Send this through the logging interface. */
-    while(read(fd[0], (void *)&buf, 1))
-        putc(buf, stderr);
+    rsync_out = fdopen(fd[0], "r");
 
-    int ret_code = -1;
+    while(fgets(buf, 256, rsync_out) != NULL)
+        log_msg(WARN, "%s", buf);
+
+    ret_code = -1;
     wait(&ret_code);
 
     return ret_code;
@@ -74,27 +78,24 @@ static int spawn_rsync(const char *rsync_path, char *const *argv)
 
 int sync_file(struct watch_session *ws, const char *dir, const char *file)
 {
-    char **argv;
+    char **argv;  /* Array to hold the command line args to rsync. */
+    int ret;  /* Rsync return code. */
 
     argv = (char **)f_malloc(5 * sizeof(char *));
 
     argv[0] = ws->rsync_path;
 
-    /* TODO: Cache ws->src length. */
     /* Create source argument. */
-    int src_len = ws->src.len + strlen(dir) + strlen(file) + 3; /* +3 because of slashes and \0 */
-    argv[1] = (char *)f_malloc(src_len);
-
-    CHECK_PTR(argv[1]);
+    argv[1] = (char *)f_malloc(ws->src.len + 1 +
+                               strlen(dir) + 1 +
+                               strlen(file) + 1);
 
     sprintf(argv[1], "%s/%s/%s", ws->src.str, dir, file);
     log_msg(DEBUG, "src: %s", argv[1]);
 
     /* Create target argument. */
-    int target_len = strlen(ws->target) + strlen(dir) + 2; /* +2 because of slashes and \0 */
-    argv[2] = (char *)f_malloc(target_len);
-
-    CHECK_PTR(argv[2]);
+    argv[2] = (char *)f_malloc(strlen(ws->target) + 1 +
+                               strlen(dir) + 1);
 
     sprintf(argv[2], "%s/%s", ws->target, dir);
     log_msg(DEBUG, "target: %s", argv[2]);
@@ -102,11 +103,11 @@ int sync_file(struct watch_session *ws, const char *dir, const char *file)
     argv[3] = "-d";
     argv[4] = NULL;
 
-    int ret = spawn_rsync(ws->rsync_path, argv);
+    ret = spawn_rsync(ws->rsync_path, argv);
 
     /* Clean up ... */
-    FREE_MEM(argv[1]);
-    FREE_MEM(argv[2]);
+    free(argv[1]);
+    free(argv[2]);
 
     return ret;
 }
