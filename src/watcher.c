@@ -32,43 +32,49 @@
 
 static int reg_dir(struct watch_session *ws, int cur_depth, const char *path)
 {
+    int path_len;
+    char *cpath;  /* Complete path. */
+    DIR *dirhandle;  /* Directory handle for directory to register. */
+    struct dirent *dir_entry;  /* Iterator variable. */
+
+
+    /* Cache path length. */
+    path_len = strlen(path);
+
     /* Check if depth limit was reached. */
     if(ws->depth > -1 && cur_depth > ws->depth)
         return 0;
 
-    int compl_path_len = ws->src.len + 1 + strlen(path) + 1;
-    char *compl_path;
-    AUTO_SNPRINTF(compl_path, compl_path_len, "%s/%s", ws->src.str, path);
+    cpath = (char *)malloc(ws->src.len + 1 + strlen(path) + 1);
+    sprintf(cpath, "%s/%s", ws->src.str, path);
 
-    DIR *cur_dir = opendir(compl_path);
-    free(compl_path);
+    dirhandle = opendir(cpath);
+    free(cpath);
 
-    if(!cur_dir) {
+    if(!dirhandle) {
         log_msg(WARN, "Failed to open `%s': %s", path, strerror(errno));
         return -1;
     }
 
     install_dir_watch(ws, path, cur_depth);
 
-    struct dirent *d;
-    while((d = readdir(cur_dir)) != NULL) {
-        if(d->d_type == DT_DIR) {
+    while((dir_entry = readdir(dirhandle)) != NULL) {
+        if(dir_entry->d_type == DT_DIR) {
             /* Skip current and parent-directory links. */
-            if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
+            if(strcmp(dir_entry->d_name, ".") == 0 ||
+               strcmp(dir_entry->d_name, "..") == 0)
                 continue;
 
             /* Turn relative path into complete path. */
-            int full_path_len = strlen(path) + 1 + strlen(d->d_name) + 1;
-            char *full_path;
+            cpath = (char *)malloc(path_len + 1 + strlen(dir_entry->d_name) + 1);
+            sprintf(cpath, "%s/%s", path, dir_entry->d_name);
 
-            AUTO_SNPRINTF(full_path, full_path_len, "%s/%s", path, d->d_name);
-
-            log_msg(DEBUG, "Checking `%s'.", full_path);
-            if(!ws->excl || regexec(ws->excl, full_path, 0, NULL, 0) != 0)
+            log_msg(DEBUG, "Checking `%s'.", cpath);
+            if(!ws->excl || regexec(ws->excl, cpath, 0, NULL, 0) != 0)
                 /* Watch subdirectory. */
-                reg_dir(ws, cur_depth + 1, full_path);
+                reg_dir(ws, cur_depth + 1, cpath);
 
-            free(full_path);
+            free(cpath);
         }
     }
 
