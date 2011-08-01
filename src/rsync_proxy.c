@@ -29,10 +29,6 @@
 #include "logging.h"
 
 
-/* Preserve robustness. */
-#define CHECK_PTR(x) if(!(x)) return -1
-
-
 static int spawn_rsync(const char *rsync_path, char *const *argv)
 {
     int pid;
