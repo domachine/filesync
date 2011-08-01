@@ -86,12 +86,12 @@ static const size_t EVENT_SIZE = (sizeof(struct inotify_event) + 16)*1024;
 
 static struct inotify_event* read_event(int fd)
 {
-    struct inotify_event* buf = NULL;
+    struct inotify_event* buf;
+    ssize_t nbytes;
 
     /* Allocate memory. */
     buf = (struct inotify_event*)f_malloc(EVENT_SIZE);
-
-    ssize_t nbytes = read(fd, buf, EVENT_SIZE);
+    nbytes = read(fd, buf, EVENT_SIZE);
 
     if(nbytes < 0) {
         /* Failed to read from file-descriptor. */
