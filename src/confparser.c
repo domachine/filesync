@@ -108,7 +108,7 @@ int parse_conf_fd(struct watch_session *ws, int cfile, const char *fname)
     /* Load config file onto stack */
     if(lua_load(lua, file_reader, &bf, fname) != 0) {
         log_msg(WARN, "error while loading %s: %s\n",
-                cfile, lua_tostring(lua, -1));
+                fname, lua_tostring(lua, -1));
         return -1;
     }
 
