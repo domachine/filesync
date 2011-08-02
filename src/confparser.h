@@ -22,7 +22,7 @@
 
 struct watch_session;
 
-
+int parse_conf_fd(struct watch_session *ws, int cfile, const char *fname);
 int parse_conf(struct watch_session *ws, const char *cfile);
 
 #endif  /* _FILESYNC_CONFPARSER_H_ */

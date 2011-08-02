@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <string.h>
 #include <dirent.h>
+#include <unistd.h>
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -63,6 +64,72 @@ int lua_scandir(lua_State *lua)
 
 #define SET_STR_PROP(name, set_func) SET_PROP(name, set_func, lua_tostring)
 #define SET_NUM_PROP(name, set_func) SET_PROP(name, set_func, lua_tonumber)
+
+/* Length of chunks to read. */
+#define BUF_SIZE 256
+
+struct buffer
+{
+    int fd;
+    char buf[BUF_SIZE];
+    char end;
+};
+
+static const char *file_reader(lua_State *lua, void *data, size_t *size)
+{
+    struct buffer *bf = (struct buffer *)data;
+
+    if(bf->end)
+        return NULL;
+
+    *size = read(bf->fd, bf->buf, BUF_SIZE);
+    if(*size <= 0)
+        /* End reached. */
+        return NULL;
+
+    if(*size < BUF_SIZE)
+        bf->end = 1;
+
+    return bf->buf;
+}
+
+int parse_conf_fd(struct watch_session *ws, int cfile, const char *fname)
+{
+    lua_State *lua = luaL_newstate();
+    struct buffer bf;
+
+    (void)memset(&bf, 0, sizeof(struct buffer));
+    bf.fd = cfile;
+    bf.end = 0;
+
+    /* Load config file onto stack */
+    if(lua_load(lua, file_reader, &bf, fname) != 0) {
+        log_msg(WARN, "error while loading %s: %s\n",
+                cfile, lua_tostring(lua, -1));
+        return -1;
+    }
+
+    if(lua_pcall(lua, 0, 0, 0) != 0) {
+        log_msg(WARN, "error while calling %s: %s\n",
+                cfile, lua_tostring(lua, -1));
+        return -1;
+    }
+
+    /* Expose the watch_session properties to the lua side. */
+    SET_STR_PROP("src", watch_session_set_src);
+    SET_STR_PROP("target", watch_session_set_target);
+    SET_STR_PROP("exclude", watch_session_set_ext_excl);
+    SET_STR_PROP("pid_file", watch_session_set_pid_file);
+    SET_STR_PROP("log_file", watch_session_set_log_file);
+
+    SET_NUM_PROP("depth", watch_session_set_depth);
+    SET_NUM_PROP("watch_mask", watch_session_set_depth);
+    SET_NUM_PROP("daemon", watch_session_set_daemon);
+
+    lua_close(lua);
+
+    return 0;
+}
 
 int parse_conf(struct watch_session *ws, const char *cfile)
 {
