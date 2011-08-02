@@ -23,6 +23,8 @@
 #include <string.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -68,6 +70,7 @@ int lua_scandir(lua_State *lua)
 /* Length of chunks to read. */
 #define BUF_SIZE 256
 
+/* Struct to save reader status. */
 struct buffer
 {
     int fd;
@@ -133,36 +136,17 @@ int parse_conf_fd(struct watch_session *ws, int cfile, const char *fname)
 
 int parse_conf(struct watch_session *ws, const char *cfile)
 {
-    lua_State *lua = luaL_newstate();
-    /*luaL_openlibs(state);*/
+    int fd = open(cfile, O_RDONLY);
+    int ret;
 
-    lua_register(lua, "listdir", lua_scandir);
-
-    /* Load config file onto stack */
-    if(luaL_loadfile(lua, cfile) > 0) {
-        log_msg(WARN, "error while loading %s: %s\n",
-                cfile, lua_tostring(lua, -1));
+    if(fd == -1) {
+        log_msg(WARN, "Failed to open %s: %s",
+                cfile, strerror(errno));
         return -1;
     }
 
-    /* Call corresponding function */
-    if(lua_pcall(lua, 0, 0, 0) > 0) {
-        log_msg(WARN, "error while calling %s: %s\n",
-                cfile, lua_tostring(lua, -1));
-        return -1;
-    }
+    ret = parse_conf_fd(ws, fd, cfile);
+    close(fd);
 
-    /* Expose the watch_session properties to the lua side. */
-    SET_STR_PROP("src", watch_session_set_src);
-    SET_STR_PROP("target", watch_session_set_target);
-    SET_STR_PROP("exclude", watch_session_set_ext_excl);
-    SET_STR_PROP("pid_file", watch_session_set_pid_file);
-    SET_STR_PROP("log_file", watch_session_set_log_file);
-
-    SET_NUM_PROP("depth", watch_session_set_depth);
-    SET_NUM_PROP("watch_mask", watch_session_set_depth);
-    SET_NUM_PROP("daemon", watch_session_set_daemon);
-
-    lua_close(lua);
-    return 0;
+    return ret;
 }
