@@ -31,12 +31,6 @@
 /* Check memory to be != NULL before freeing it. */
 #define FREE_MEM(x) if(x) free(x)
 
-/* Automates the malloc -> snprintf stuff. */
-/* #define AUTO_SNPRINTF(str, n, fmt, args ...) do {   \ */
-/*         str = (char *)f_malloc(n);                  \ */
-/*         snprintf(str, n, fmt, args);                \ */
-/*     } while(0) */
-
 /**
    \brief Simple datatype that implements the boolean type.
 */
