@@ -24,6 +24,7 @@
 #include <sys/inotify.h>
 
 #include "utils.h"
+#include "logging.h"
 
 
 struct watch_session *new_watch_session()
@@ -61,6 +62,25 @@ struct watch_session *new_watch_session()
     ws->log_file = NULL;
 
     return ws;
+}
+
+int watch_session_set_excl(struct watch_session *ws, const char *regex, int flags)
+{
+    int err_code;
+
+    ws->excl = (regex_t *)f_malloc(sizeof(regex_t));
+
+    if((err_code = regcomp(ws->excl, regex, flags)) != 0) {
+        size_t err_len = regerror(err_code, ws->excl, NULL, 0);
+        char *err_buf = (char *)f_malloc(err_len);
+
+        regerror(err_code, ws->excl, err_buf, err_len);
+        log_msg(WARN, "Failed to compile regex: %s", err_buf);
+
+        return -1;
+    }
+
+    return 0;
 }
 
 void destroy_watch_session(struct watch_session *ws)

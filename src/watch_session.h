@@ -86,6 +86,17 @@ struct watch_session
 struct watch_session *new_watch_session();
 
 /**
+   \brief Compiles the given regex and sets the exclude field.
+
+   On error a log message is send to WARN.
+
+   \param ws The affected watch session.
+   \param regex The regex to compile.
+   \return 0 on success and -1 on failure.
+*/
+int watch_session_set_excl(struct watch_session *ws, const char *regex, int flags);
+
+/**
    \brief Destroys all resources allocated by new_watch_session().
 
    Destroys the structure itself, too.

@@ -98,20 +98,10 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
                 ws->depth = -1;
             }
             break;
-        case 'e': 
-        {
-            int err_code;
-            ws->excl = (regex_t *)f_malloc(sizeof(regex_t));
+        case 'e':
+            watch_session_set_excl(ws, optarg, REG_EXTENDED);
 
-            if((err_code = regcomp(ws->excl, optarg, REG_EXTENDED)) != 0) {
-                size_t err_len = regerror(err_code, ws->excl, NULL, 0);
-                char *err_buf = (char *)f_malloc(err_len);
-
-                regerror(err_code, ws->excl, err_buf, err_len);
-                log_msg(WARN, "Failed to compile regex: %s", err_buf);
-            }
             break;
-        }
         case 'D':
             ws->daemon = TRUE;
             break;
@@ -133,9 +123,6 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
         ws->src.len = strlen(argv[args]);
         ws->src.str = (char *)f_malloc(ws->src.len + 1);
 
-        /* if(!ws->src) */
-        /*     return -1; */
-
         strncpy(ws->src.str, argv[args], ws->src.len + 1);
 
         if(--add_args >= 1) {
@@ -144,6 +131,5 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
         }
     }
 
-    /* TODO: Build rsync command ... */
     return 0;
 }
