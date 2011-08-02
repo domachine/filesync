@@ -27,6 +27,7 @@
 #include <lauxlib.h>
 
 #include "watch_session.h"
+#include "logging.h"
 
 
 int lua_scandir(lua_State *lua)
@@ -66,8 +67,23 @@ int lua_scandir(lua_State *lua)
 int parse_conf(struct watch_session *ws, const char *cfile)
 {
     lua_State *lua = luaL_newstate();
+    /*luaL_openlibs(state);*/
 
     lua_register(lua, "listdir", lua_scandir);
+
+    /* Load config file onto stack */
+    if(luaL_loadfile(lua, cfile) > 0) {
+        log_msg(WARN, "error while loading %s: %s\n",
+                cfile, lua_tostring(lua, -1));
+        return -1;
+    }
+
+    /* Call corresponding function */
+    if(lua_pcall(lua, 0, 0, 0) > 0) {
+        log_msg(WARN, "error while calling %s: %s\n",
+                cfile, lua_tostring(lua, -1));
+        return -1;
+    }
 
     /* Expose the watch_session properties to the lua side. */
     SET_STR_PROP("src", watch_session_set_src);
@@ -80,5 +96,6 @@ int parse_conf(struct watch_session *ws, const char *cfile)
     SET_NUM_PROP("watch_mask", watch_session_set_depth);
     SET_NUM_PROP("daemon", watch_session_set_daemon);
 
+    lua_close(lua);
     return 0;
 }
