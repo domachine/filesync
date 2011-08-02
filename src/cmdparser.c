@@ -108,8 +108,14 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
             ws->daemon = TRUE;
             break;
         case 'c':
-            parse_conf(ws, optarg);
+        {
+            if(strcmp(optarg, "-") == 0)
+                parse_conf_fd(ws, 0, "<stdin>");
+            else
+                parse_conf(ws, optarg);
+
             break;
+        }
         case '?':
             return -1;
         default:
