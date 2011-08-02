@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. */
 
-//#error Not finished yet!
 
 #include "notify.h"
 
@@ -32,51 +31,50 @@
 
 int install_dir_watch(struct watch_session *ws, const char *path, int depth)
 {
+    char *cpath;  /* Complete path. */
+    struct dir_watch *pwatch;  /* The watch associated with the given path. */
+
+
     assert(ws);
 
     /* Turn relative path into full path. */
-    int path_len = ws->src.len + 1 + strlen(path) + 1;
-    char *full_path = (char *)f_malloc(path_len);
+    cpath = (char *)f_malloc(ws->src.len + 1 +
+                             strlen(path) + 1);
 
-    if(!full_path)
-        return -2;
-
-    snprintf(full_path, path_len, "%s/%s", ws->src.str, path);
+    sprintf(cpath, "%s/%s", ws->src.str, path);
 
     /* Build watch-table entry. */
-    struct dir_watch *w =
+    pwatch =
         (struct dir_watch *)f_malloc(sizeof(struct dir_watch));
 
-    assert(w);
+    pwatch->path = NULL;
 
-    w->path = NULL;
+    clone_str(&pwatch->path, path);
+    pwatch->depth_level = depth;
 
-    clone_str(&w->path, path);
-    w->depth_level = depth;
-
-    if(!w)
+    if(!pwatch)
         return -2;
 
-    log_msg(DEBUG, "full_path: %s", full_path);
+    log_msg(DEBUG, "cpath: %s", cpath);
 
-    if((w->wd = inotify_add_watch(ws->notify_descr,
-                                  full_path, ws->watch_mask)) < 0) {
+    if((pwatch->wd = inotify_add_watch(ws->notify_descr,
+                                       cpath, ws->watch_mask)) < 0) {
 
-        log_msg(DEBUG, "Failed to add watch for `%s': %s", full_path, strerror(errno));
+        log_msg(DEBUG, "Failed to add watch for `%s': %s", cpath, strerror(errno));
         /* Failed to add watch.
            The caller can retrieve information using errno. */
-        free(full_path);
-        free(w);
+        free(cpath);
+        free(pwatch);
         return -1;
     }
     else
-        log_msg(DEBUG, "Added watch for `%s'", full_path);
+        log_msg(DEBUG, "Added watch for `%s'", cpath);
 
 
-    free(full_path);
+    free(cpath);
 
-    HASH_ADD_INT(ws->watch_table, wd, w);
-    return w->wd;
+    HASH_ADD_INT(ws->watch_table, wd, pwatch);
+    return pwatch->wd;
 }
 
 struct dir_watch *get_dir_watch(struct watch_session *ws, int wd)

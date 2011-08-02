@@ -41,6 +41,7 @@ int main(int argc, char **argv)
 {
     /* Print all log messages to stderr per default. */
     FILE *log_file_descr = stderr;
+    int ret;  /* Return code of the watcher. */
 
     /* TODO: make the verbosity level cutomizable through command line. */
     init_log(log_file_descr, TRUE, ALL_CHANNELS);
@@ -70,13 +71,12 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    int src_len = ws->src.len;
-    if(ws->src.str[src_len - 1] == '/') {
-        ws->src.str[src_len - 1] = '\0';
+    if(ws->src.str[ws->src.len - 1] == '/') {
+        ws->src.str[ws->src.len - 1] = '\0';
         --ws->src.len;
     }
 
-    int ret = run_watcher(ws);
+    ret = run_watcher(ws);
 
     clean_up(SIGTERM);
     return ret;

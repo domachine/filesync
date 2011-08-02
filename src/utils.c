@@ -27,9 +27,9 @@
 
 int clone_str(char **dest, const char *src)
 {
-    assert(dest);
     int src_size = strlen(src) + 1;  /* +1 because of null-byte. */
 
+    assert(dest);
     *dest = (char *)realloc(*dest, src_size);
     if(!dest)
         return -1;

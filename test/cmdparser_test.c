@@ -23,15 +23,17 @@
 
 int main(int argc, char **argv)
 {
+    struct watch_session *ws;
+
     init_log(stderr, TRUE, ALL_CHANNELS);
     TEST_MSG("** starting cmdparser test **");
 
-    struct watch_session *ws = new_watch_session();
+    ws = new_watch_session();
     parse_cmd_line(ws, argc, argv);
 
     TEST_MSG_V("ws->src: %s", ws->rsync_path);
     TEST_MSG_V("ws->src: %i", ws->depth);
-    TEST_MSG_V("ws->src: %s", ws->src);
+    TEST_MSG_V("ws->src: %s", ws->src.str);
     TEST_MSG_V("ws->target: %s", ws->target);
 
     return EXIT_SUCCESS;

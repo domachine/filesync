@@ -45,6 +45,10 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
 
     const char *short_options = "r:hd:e:Dp:l:";
 
+    int add_args;  /* Remaining arguments. */
+    int args;  /* Option indicator. */
+
+
     /* Loop through command line arguments
      * and interprete them. */
     while(1) {
@@ -94,10 +98,11 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
                 ws->depth = -1;
             }
             break;
-        case 'e':
+        case 'e': 
+        {
+            int err_code;
             ws->excl = (regex_t *)f_malloc(sizeof(regex_t));
 
-            int err_code;
             if((err_code = regcomp(ws->excl, optarg, REG_EXTENDED)) != 0) {
                 size_t err_len = regerror(err_code, ws->excl, NULL, 0);
                 char *err_buf = (char *)f_malloc(err_len);
@@ -106,6 +111,7 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
                 log_msg(WARN, "Failed to compile regex: %s", err_buf);
             }
             break;
+        }
         case 'D':
             ws->daemon = TRUE;
             break;
@@ -118,8 +124,8 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
         }
     }
 
-    int add_args = argc - optind;
-    int args = optind;
+    add_args = argc - optind;
+    args = optind;
 
     /* Parse remaining arguments */
     if(add_args >= 1) {

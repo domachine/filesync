@@ -182,13 +182,13 @@ void run_main_loop(struct watch_session *ws)
 
 int run_watcher(struct watch_session *ws)
 {
-    FILE *pid_file;  /* File descriptor for pid file. */
     FILE *log_file_descr;  /* Holds log file descriptor. */
 
 
     if(ws->daemon) {
-        /* Prepare everything for daemon spawning. */
+        FILE *pid_file;  /* File descriptor for pid file. */
 
+        /* Prepare everything for daemon spawning. */
         if(!ws->pid_file) {
             log_msg(WARN, "Daemon mode but no pid-file given (using stdout).");
             pid_file = stdout;

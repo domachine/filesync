@@ -18,7 +18,8 @@
 set(LIB_SRC watch_session.c
   rsync_proxy.c logging.c
   cmdparser.c utils.c
-  notify.c watcher.c)
+  notify.c watcher.c
+  confparser.c)
 
 set(EXE_SRC main.c)
 

@@ -49,7 +49,7 @@ static int spawn_rsync(const char *rsync_path, char *const *argv)
         log_msg(DEBUG, "Spawned child");
         /* Redirect standard error. */
         dup2(fd[1], 2);
-        //close(2);
+        /* close(2); */
 
         /* Simply spawn the process. */
         execvp(rsync_path, argv);
