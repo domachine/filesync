@@ -18,17 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-# Predefined variables:
-#DEPTH=-1
-#SOURCE_DIR=
-#TARGET_DIR=
-#EXCLUDE=
 FILESYNC_EXE=filesync
 RUN_DIR=
-ADDITIONAL_PARAMS=
-
-# Is obsolete.
-#LOG_FILE=
 
 if [[ -f "$HOME/.filesyncrc" ]]; then
     . "$HOME/.filesyncrc"
@@ -59,75 +50,31 @@ check_run_dir()
     [[ -d "/tmp/filesync" ]] || mkdir "/tmp/filesync"
 }
 
-setup_params()
-{
-    [[ -z $LOG_FILE ]] || msg "LOG_FILE setting is obsolete" >&2
-    for i in "${ADDITIONAL_PARAMS[@]}"; do
-        [[ -z "$i" ]] && continue;
-
-        echo -n "$i"
-        echo -en "\0"
-    done
-
-    local proc_dir=$(mktemp -d "$RUN_DIR/fs.XXXXXX")
-
-    echo -ne "--daemon\0"
-
-    [[ -z $3 ]] || echo -en "--exclude\0" && echo -n "$3" && echo -en "\0"
-    [[ -z $4 ]] || is_num "$4" && echo -en "--depth\0" && echo -n "$4" && echo -ne "\0"
-
-    echo -en "--pid-file\0"
-    local pid_file="$proc_dir/pid"
-    local log_file="$proc_dir/log"
-
-    echo -en "$pid_file\0"
-
-    echo -en "--log-file\0"
-    echo -n "$log_file"
-    echo -en "\0"
-
-    if ! [[ -z $1 ]]; then
-        echo -n "$1"
-        echo -en "\0"
-    else
-        msg "Source directory not specified!" >&2
-        exit 1
-    fi
-
-    if ! [[ -z $2 ]]; then
-        echo -n "$2"
-    else
-        msg "Target directory not specified!" >&2
-        exit 1
-    fi
-}
-
 setup_processes()
 {
-    local mod
-    let mod=${#JOBS[@]}%4
-
-    (( mod == 0 )) || {
-        msg "Incomplete JOB tuple."
-        exit 1
-    }
-
     check_run_dir
 
-    local source_dir
-    local target_dir
-    local exclude
-    local depth
+    local job
+    local proc_dir
+    local pid_file
+    local log_file
 
-    while (( ${#JOBS[@]} > 0 )); do
-        setup_params "${JOBS[0]}" "${JOBS[1]}" "${JOBS[2]}" "${JOBS[3]}" | xargs -0 "$FILESYNC_EXE"
+    for job in ${JOBS[@]}; do
+        proc_dir=$(mktemp -d "$RUN_DIR/fs.XXXXXX")
+        pid_file="$proc_dir/pid"
+        log_file="$proc_dir/log"
 
-        unset JOBS[0]
-        unset JOBS[1]
-        unset JOBS[2]
-        unset JOBS[3]
-
-        JOBS=("${JOBS[@]}")
+        if [[ $(type -t "$job") == function ]]; then
+            "$job" | "$FILESYNC_EXE" --daemon \
+                --conf-file - \
+                --log-file "$log_file" \
+                --pid-file "$pid_file"
+        else
+            "$FILESYNC_EXE" --daemon \
+                --conf-file "$job" \
+                --log-file "$log_file" \
+                --pid-file "$pid_file"
+        fi
     done
 }
 
