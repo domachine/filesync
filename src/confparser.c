@@ -66,6 +66,7 @@ int lua_scandir(lua_State *lua)
 
 #define SET_STR_PROP(name, set_func) SET_PROP(name, set_func, lua_tostring)
 #define SET_NUM_PROP(name, set_func) SET_PROP(name, set_func, lua_tonumber)
+#define SET_BOOL_PROP(name, set_func) SET_PROP(name, set_func, lua_toboolean)
 
 /* Length of chunks to read. */
 #define BUF_SIZE 256
@@ -127,7 +128,8 @@ int parse_conf_fd(struct watch_session *ws, int cfile, const char *fname)
 
     SET_NUM_PROP("depth", watch_session_set_depth);
     SET_NUM_PROP("watch_mask", watch_session_set_depth);
-    SET_NUM_PROP("daemon", watch_session_set_daemon);
+
+    SET_BOOL_PROP("daemon", watch_session_set_daemon);
 
     lua_close(lua);
 
