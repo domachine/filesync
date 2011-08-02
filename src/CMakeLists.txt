@@ -26,4 +26,5 @@ set(EXE_SRC main.c)
 add_library(fs ${LIB_SRC})
 add_executable(filesync ${EXE_SRC})
 
-target_link_libraries(filesync fs)
+message(${LUA_LIBRARIES})
+target_link_libraries(filesync fs ${LUA_LIBRARIES})

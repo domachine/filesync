@@ -15,7 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-include_directories(src)
+cmake_minimum_required(VERSION 2.8)
+
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
+
+include(FindPkgConfig)
+
+pkg_check_modules(LUA REQUIRED lua)
+
+include_directories(src ${LUA_INCLUDE_DIRS})
 
 add_subdirectory(src)
 add_subdirectory(test)
