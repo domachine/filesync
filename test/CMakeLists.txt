@@ -23,3 +23,9 @@ target_link_libraries(notify_test fs)
 
 add_executable(confparser_test confparser_test.c)
 target_link_libraries(confparser_test fs ${LUA_LIBRARIES})
+
+add_executable(rsync_proxy_test rsync_proxy_test.c)
+target_link_libraries(rsync_proxy_test fs ${LUA_LIBRARIES})
+
+add_executable(logging_test logging_test.c)
+target_link_libraries(logging_test fs ${LUA_LIBRARIES})

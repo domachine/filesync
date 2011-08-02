@@ -31,24 +31,31 @@
 
 int main()
 {
+    struct watch_session *ws;
+    FILE *file;
+    int ret;
+
     init_log(stderr, TRUE, DEBUG);
 
-    if(mkdir("test-src", S_IRWXU | S_IRWXO) != 0 || mkdir("test-target", S_IRWXU | S_IRWXO) != 0)
+    if(mkdir("test-src", S_IRWXU | S_IRWXO) != 0 || mkdir("test-target", S_IRWXU | S_IRWXO) != 0) {
         perror("Mkdir failed");
+        abort();
+    }
 
-    FILE *file = fopen("test-src/file", "w");
-    if(!file)
+    file = fopen("test-src/file", "w");
+    if(!file) {
         perror("Failed to write test file");
+        abort();
+    }
     else
         fclose(file);
 
-    struct watch_session *ws = new_watch_session();
+    ws = new_watch_session();
 
     clone_str(&ws->rsync_path, "rsync");
-    clone_str(&ws->src, "test-src");
+    watch_session_set_src(ws, "test-src");
     clone_str(&ws->target, "test-target");
 
-    int ret;
     if((ret = sync_file(ws, ".", "file")) != 0)
         log_msg(DEBUG, "rsync-ret: %i", ret);
 
