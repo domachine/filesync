@@ -57,7 +57,7 @@ int lua_scandir(lua_State *lua)
     return 1;
 }
 
-#define SET_PROP(name, set_func, conv_func) do {  \
+#define SET_PROP(name, set_func, conv_func) do {        \
         lua_getglobal(lua, name);                       \
         if(!lua_isnil(lua, -1))                         \
             set_func(ws, conv_func(lua, -1));           \
