@@ -97,6 +97,29 @@ struct watch_session *new_watch_session();
 int watch_session_set_excl(struct watch_session *ws, const char *regex, int flags);
 
 /**
+   \brief Sets the src field in the watch_session.
+
+   Calculates correct size.
+
+   \param ws The affected watch session.
+   \param src The value to set.
+*/
+int watch_session_set_src(struct watch_session *ws, const char *src);
+
+/* Property setter macros. */
+#define __set_str_prop(ws, key, value) (clone_str(&ws->key, value))
+#define __set_int_prop(ws, key, value) (ws->key = value)
+#define watch_session_set_target(ws, value) __set_str_prop(ws, target, value)
+#define watch_session_set_rsync_path(ws, value) __set_str_prop(ws, rsync_path, value)
+#define watch_session_set_pid_file(ws, value) __set_str_prop(ws, pid_file, value)
+#define watch_session_set_log_file(ws, value) __set_str_prop(ws, log_file, value)
+
+#define watch_session_set_depth(ws, value) __set_int_prop(ws, depth, value)
+#define watch_session_set_daemon(ws, value) __set_int_prop(ws, daemon, value)
+#define watch_session_set_ext_excl(ws, value) watch_session_set_excl(ws, value, \
+                                                                     REG_EXTENDED)
+
+/**
    \brief Destroys all resources allocated by new_watch_session().
 
    Destroys the structure itself, too.

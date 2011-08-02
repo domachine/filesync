@@ -19,6 +19,7 @@
 #include "watch_session.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <assert.h>
 #include <sys/inotify.h>
@@ -81,6 +82,12 @@ int watch_session_set_excl(struct watch_session *ws, const char *regex, int flag
     }
 
     return 0;
+}
+
+int watch_session_set_src(struct watch_session *ws, const char *src)
+{
+    ws->src.len = strlen(src);
+    return clone_str(&ws->src.str, src);
 }
 
 void destroy_watch_session(struct watch_session *ws)
