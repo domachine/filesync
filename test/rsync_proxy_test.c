@@ -37,10 +37,8 @@ int main()
 
     init_log(stderr, TRUE, DEBUG);
 
-    if(mkdir("test-src", S_IRWXU | S_IRWXO) != 0 || mkdir("test-target", S_IRWXU | S_IRWXO) != 0) {
+    if(mkdir("test-src", S_IRWXU | S_IRWXO) != 0 || mkdir("test-target", S_IRWXU | S_IRWXO) != 0)
         perror("Mkdir failed");
-        abort();
-    }
 
     file = fopen("test-src/file", "w");
     if(!file) {
