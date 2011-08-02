@@ -16,7 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 add_executable(cmdparser_test cmdparser_test.c)
-target_link_libraries(cmdparser_test fs)
+target_link_libraries(cmdparser_test fs ${LUA_LIBRARIES})
 
 add_executable(notify_test notify_test.c)
 target_link_libraries(notify_test fs)
+
+add_executable(confparser_test confparser_test.c)
+target_link_libraries(confparser_test fs ${LUA_LIBRARIES})
