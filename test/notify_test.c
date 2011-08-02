@@ -27,11 +27,12 @@
 
 int main()
 {
-    init_log(stderr, TRUE, ALL_CHANNELS);
-    TEST_MSG("** starting notify test **");
 
     struct watch_session *ws = new_watch_session();
     assert(ws);
+
+    init_log(stderr, TRUE, ALL_CHANNELS);
+    TEST_MSG("** starting notify test **");
 
     clone_str(&ws->src.str, "test-src");
     ws->src.len = strlen(ws->src.str);
