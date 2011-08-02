@@ -132,13 +132,14 @@ int daemonize(FILE *pid_file)
 void run_main_loop(struct watch_session *ws)
 {
     struct inotify_event *ev_buf;
-    struct dir_watch *ev_src;  /* The source directory of and event. */
-    struct stat s_ev_src;  /* Stat entry for the source directory. */
-    char *cpath;  /* Complete path. */
-    char *rel_path;  /* Relative path of the source directory. */
 
 
     while((ev_buf = read_event(ws->notify_descr)) != NULL) {
+        struct dir_watch *ev_src;  /* The source directory of and event. */
+        struct stat s_ev_src;  /* Stat entry for the source directory. */
+        char *cpath;  /* Complete path. */
+
+
         log_msg(DEBUG, "Event occured ...");
 
         /* Get the entry from the watch table. */
@@ -154,6 +155,8 @@ void run_main_loop(struct watch_session *ws)
         if(stat(cpath, &s_ev_src) < 0)
             log_msg(WARN, "Stat failed for `%s': %s", cpath, strerror(errno));
         else {
+            char *rel_path;  /* Relative path of the source directory. */
+
             rel_path = (char *)f_malloc(strlen(ev_src->path) + 1 +
                                         strlen(ev_buf->name) + 1);
             sprintf(rel_path, "%s/%s", ev_src->path, ev_buf->name);
