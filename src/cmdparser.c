@@ -27,23 +27,25 @@
 
 #include "watch_session.h"
 #include "logging.h"
+#include "confparser.h"
 
 
 int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
 {
     struct option long_options[] =
         {
-            {"rsync",    required_argument, NULL, 'r'},
-            {"help",     no_argument,       NULL, 'h'},
-            {"depth",    required_argument, NULL, 'd'},
-            {"exclude",  required_argument, NULL, 'e'},
-            {"daemon",   no_argument,       NULL, 'D'},
-            {"pid-file", required_argument, NULL, 'p'},
-            {"log-file", required_argument, NULL, 'l'},
-            {NULL,       0,                 NULL, 0}
+            {"rsync",     required_argument, NULL, 'r'},
+            {"help",      no_argument,       NULL, 'h'},
+            {"depth",     required_argument, NULL, 'd'},
+            {"exclude",   required_argument, NULL, 'e'},
+            {"daemon",    no_argument,       NULL, 'D'},
+            {"pid-file",  required_argument, NULL, 'p'},
+            {"log-file",  required_argument, NULL, 'l'},
+            {"conf-file", required_argument, NULL, 'c'},
+            {NULL,       0,                  NULL, 0}
         };
 
-    const char *short_options = "r:hd:e:Dp:l:";
+    const char *short_options = "r:hd:e:Dp:l:c:";
 
     int add_args;  /* Remaining arguments. */
     int args;  /* Option indicator. */
@@ -104,6 +106,9 @@ int parse_cmd_line(struct watch_session *ws, int argc, char *const *argv)
             break;
         case 'D':
             ws->daemon = TRUE;
+            break;
+        case 'c':
+            parse_conf(ws, optarg);
             break;
         case '?':
             return -1;
