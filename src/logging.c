@@ -24,15 +24,15 @@
 
 /* Static fields to store all configuration data. */
 static FILE *_log_descr;
-static BOOL _log_nl;
 static int _log_filter;
+
 
 void init_log(FILE *c, BOOL nl, int filter)
 {
     assert(c);
 
     _log_descr = c;
-    _log_nl = nl;
+    log_nl = nl;
     _log_filter = filter;
 }
 
@@ -47,7 +47,7 @@ void log_msg(int l, const char *fmt, ...)
         vfprintf(_log_descr, fmt, ap);
         va_end(ap);
 
-        if(_log_nl)
+        if(log_nl)
             fputc('\n', _log_descr);
         fflush(_log_descr);
     }

@@ -30,6 +30,9 @@
 #include "utils.h"
 
 
+BOOL log_nl;
+
+
 /**
    \brief The log-level datatype that tells the logging
    interface which channel to use.
