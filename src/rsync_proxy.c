@@ -36,6 +36,7 @@ static int spawn_rsync(const char *rsync_path, char *const *argv)
     char buf[256];  /* Buffer to hold rsync messages. */
     FILE *rsync_out;  /* rsync output stdio file handle. */
     int ret_code;  /* Holds the return code of the rsync process. */
+    BOOL old_log_nl = log_nl;
 
 
     if(pipe(fd) < 0) return -1;
@@ -62,8 +63,11 @@ static int spawn_rsync(const char *rsync_path, char *const *argv)
     log_msg(DEBUG, "Back to parent");
     rsync_out = fdopen(fd[0], "r");
 
+    log_nl = FALSE;
     while(fgets(buf, 256, rsync_out) != NULL)
         log_msg(WARN, "%s", buf);
+
+    log_nl = old_log_nl;
 
     ret_code = -1;
     wait(&ret_code);
