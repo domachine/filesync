@@ -70,33 +70,11 @@
    The configuration-file is a simple bash script which can set the following options:
 
    #+BEGIN_SRC: bash
-# This sets the depth option. (optional)
-DEPTH=-1
-
-# Specifies the source directory for the synchronization.
-SOURCE_DIR=
-
-# Specifies the target directory for the synchronization.
-TARGET_DIR=
-
-# Specifies the exclude regex. (optional)
-EXCLUDE=
-
-# Specifies the path to the filesync executable (optional)
-FILESYNC_EXE=filesync
-
-# Specifies the directory to place to put the PID files in.
-# !: This directory should only contain the PID files.
-# (optional)
-RUN_DIR=/tmp/filesync
-
-# This can be used to pass additional params to filesync.
-# (optional)
-ADDITIONAL_PARAMS=()
-
-# Specifies the log-file. (default stderr). (optional)
-LOG_FILE=
+FILESYNC_EXE=filesync_path
+JOBS=(config_files ...)
    #+END_SRC
+
+   =config_files= are lua scripts according to the [[Profile functionality]].
 
 ** Depth feature
    Filesync will be able to limit the watching depth.
@@ -307,6 +285,18 @@ struct dir_watch
    This describes the possibility to declare filesync
    options within a config file (profile) and call filesync
    with this config file as configuration instruction.
+
+   A configuration file is a simple lua script which can set the following
+   variables which will be interpreted by filesync.
+
+   #+BEGIN_SRC: lua
+src = "Your source directory"
+target = "Your target"
+exclude = "Exclude regex"
+
+-- The depth to dive into the directory.
+depth = -1
+   #+END_SRC
 
 ** TESTED Daemon functionality
 
