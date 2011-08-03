@@ -50,16 +50,17 @@
 * User Interface                                                         :ui:
 ** Program options
 
-   | Option         | Description                                            |
-   |----------------+--------------------------------------------------------|
-   | -r, --rsync    | Rsync executable path.                                 |
-   | -s, --source   | The path to the source directory.                      |
-   | -t, --target   | The path to the target directory.                      |
-   | -d, --depth    | The depth to dive into the                             |
-   |                | directory.                                             |
-   | -D, --daemon   | Runs filesync as daemon.                               |
-   | -p, --pid-file | Sets the file in which the daemon writes its PID.      |
-   | -l, --log-file | The log-file to redirect messages to (default: stderr). |
+   | Option          | Description                                             |
+   |-----------------+---------------------------------------------------------|
+   | -r, --rsync     | Rsync executable path.                                  |
+   | -s, --source    | The path to the source directory.                       |
+   | -t, --target    | The path to the target directory.                       |
+   | -d, --depth     | The depth to dive into the                              |
+   |                 | directory.                                              |
+   | -D, --daemon    | Runs filesync as daemon.                                |
+   | -p, --pid-file  | Sets the file in which the daemon writes its PID.       |
+   | -l, --log-file  | The log-file to redirect messages to (default: stderr). |
+   | -c, --conf-file | A lua configuration file.                               |
 
 * Features                                                         :features:
 
@@ -293,8 +294,6 @@ struct dir_watch
 src = "Your source directory"
 target = "Your target"
 exclude = "Exclude regex"
-
--- The depth to dive into the directory.
 depth = -1
    #+END_SRC
 
